@@ -1,11 +1,13 @@
-aw() { $(~/bin/awssts -w $1); }
-complete -C aws_completer aws n
+###### ALIASES ######
 alias ll="ls -alF"
 alias htop="sudo htop"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs" 
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 
+
+
+###### HISTORY ######
 # Eternal bash history.
 # ---------------------
 # Undocumented feature which sets the size to "unlimited".
@@ -20,10 +22,12 @@ export HISTFILE=~/.bash_eternal_history
 # http://superuser.com/questions/20900/bash-history-loss
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
-complete -cf sudo
-complete -cf man
 
+
+###### PS1 ######
 PS1="\[\033[0;31m\]$ \[\033[0m\]"
+export PYTHONSTARTUP=~/.pythonrc
+force_color_prompt=yes
 
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
@@ -35,14 +39,6 @@ man() {
     LESS_TERMCAP_us=$'\E[04;38;5;146m' \
     man "$@"
 }
-
-if [ -f ~/.git-completion.bash ]; then
-  . ~/.git-completion.bash
-fi
-
-export PYTHONSTARTUP=~/.pythonrc
-
-force_color_prompt=yes
 
 man() {
   env \
@@ -57,6 +53,20 @@ man() {
 }
 
 
+
+###### Completion ######
+complete -cf sudo
+complete -cf man
+
+# Git completion
+if [ -f ~/.git-completion.bash ]; then
+  . ~/.git-completion.bash
+fi
+
+# AWS completion
+aw() { $(~/bin/awssts -w $1); }
+complete -C aws_completer aws n
+
 # brew completion
 if which brew >/dev/null 2>&1; then
   if [ -f `brew --prefix`/etc/bash_completion ]; then
@@ -68,7 +78,7 @@ if which brew >/dev/null 2>&1; then
   fi
 fi
 
-# Bash completion support for ssh.
+# ssh completion
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
 
 _sshcomplete() {
@@ -99,7 +109,6 @@ _sshcomplete() {
 
   return 0
 }
-
 complete -o default -o nospace -F _sshcomplete ssh
 
 
@@ -108,7 +117,6 @@ if command -v npm &>/dev/null
 then
   eval "$(npm completion)"
 fi
-
 
 # pip bash completion
 _pip_completion()
