@@ -64,19 +64,18 @@ if [ -f ~/.git-completion.bash ]; then
 fi
 
 # AWS completion
-aw() { $(~/bin/awssts -w $1); }
 complete -C aws_completer aws n
 
 # brew completion
-if which brew >/dev/null 2>&1; then
-  if [ -f `brew --prefix`/etc/bash_completion ]; then
-    . `brew --prefix`/etc/bash_completion
-  fi
-
-  if [ -f `brew --prefix`/Library/Contributions/brew_bash_completion.sh ]; then
-    . `brew --prefix`/Library/Contributions/brew_bash_completion.sh
-  fi
-fi
+#if which brew >/dev/null 2>&1; then
+#  if [ -f `brew --prefix`/etc/bash_completion ]; then
+#    . `brew --prefix`/etc/bash_completion
+#  fi
+#
+#  if [ -f `brew --prefix`/Library/Contributions/brew_bash_completion.sh ]; then
+#    . `brew --prefix`/Library/Contributions/brew_bash_completion.sh
+#  fi
+#fi
 
 # ssh completion
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
@@ -88,7 +87,6 @@ _sshcomplete() {
   else
     local OPTIONS=" -- ${CURRENT_PROMPT}"
   fi
-
 
   # parse all defined hosts from .ssh/config
   if [ -r "$HOME/.ssh/config" ]; then
@@ -130,4 +128,3 @@ complete -o default -F _pip_completion pip
 # Golang
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
-
