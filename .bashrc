@@ -113,10 +113,10 @@ complete -o default -o nospace -F _sshcomplete ssh
 
 
 # npm (Node Package Manager) completion
-if command -v npm &>/dev/null
-then
-  eval "$(npm completion)"
-fi
+#if command -v npm &>/dev/null
+#then
+#  eval "$(npm completion)"
+#fi
 
 # pip bash completion
 _pip_completion()
@@ -126,4 +126,8 @@ _pip_completion()
     PIP_AUTO_COMPLETE=1 $1 ) )
 }
 complete -o default -F _pip_completion pip
+
+# Golang
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
 
