@@ -66,15 +66,19 @@ fi
 # AWS completion
 complete -C aws_completer aws n
 
-# brew completion
-#if which brew >/dev/null 2>&1; then
-#  if [ -f `brew --prefix`/etc/bash_completion ]; then
-#    . `brew --prefix`/etc/bash_completion
-#  fi
-#
-#  if [ -f `brew --prefix`/Library/Contributions/brew_bash_completion.sh ]; then
-#    . `brew --prefix`/Library/Contributions/brew_bash_completion.sh
-#  fi
+## brew completion
+if which brew >/dev/null 2>&1; then
+  if [ -f `brew --prefix`/etc/bash_completion ]; then
+    . `brew --prefix`/etc/bash_completion
+  fi
+
+  if [ -f `brew --prefix`/Library/Contributions/brew_bash_completion.sh ]; then
+    . `brew --prefix`/Library/Contributions/brew_bash_completion.sh
+  fi
+fi
+
+#if [ -f $(brew --prefix)/etc/bash_completion ]; then
+#  . $(brew --prefix)/etc/bash_completion
 #fi
 
 # ssh completion
@@ -109,7 +113,6 @@ _sshcomplete() {
 }
 complete -o default -o nospace -F _sshcomplete ssh
 
-
 # npm (Node Package Manager) completion
 #if command -v npm &>/dev/null
 #then
@@ -125,6 +128,45 @@ _pip_completion()
 }
 complete -o default -F _pip_completion pip
 
-# Golang
+# tl completionm
+source <(tl _completion --generate-hook)
+
+function _tl_8cdd0758dfcfdfdb_complete {
+
+
+    local CMDLINE_CONTENTS="$COMP_LINE"
+    local CMDLINE_CURSOR_INDEX="$COMP_POINT"
+    local CMDLINE_WORDBREAKS="$COMP_WORDBREAKS";
+
+    export CMDLINE_CONTENTS CMDLINE_CURSOR_INDEX CMDLINE_WORDBREAKS
+
+    local RESULT STATUS;
+
+    RESULT="$(/usr/local/bin/tl _completion)";
+    STATUS=$?;
+
+    local cur;
+    _get_comp_words_by_ref -n : cur;
+
+
+    if [ $STATUS -eq 200 ]; then
+        _filedir;
+        return 0;
+
+    elif [ $STATUS -ne 0 ]; then
+        echo -e "$RESULT";
+        return $?;
+    fi;
+
+    COMPREPLY=(`compgen -W "$RESULT" -- $cur`);
+
+    __ltrim_colon_completions "$cur";
+};
+
+complete -F _tl_8cdd0758dfcfdfdb_complete "tl";
+
+
+
+###### Golang Paths ######
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
