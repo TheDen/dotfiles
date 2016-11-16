@@ -7,6 +7,11 @@ alias be="bundle exec"
 
 
 
+###### COLORS ######
+export GREP_OPTIONS="-n --color"
+
+
+
 ###### HISTORY ######
 # Eternal bash history.
 # ---------------------
