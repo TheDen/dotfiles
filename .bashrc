@@ -8,7 +8,7 @@ alias be="bundle exec"
 
 
 ###### COLORS ######
-export GREP_OPTIONS="-n --color"
+export GREP_OPTIONS="--color"
 
 
 
@@ -170,7 +170,9 @@ function _tl_8cdd0758dfcfdfdb_complete {
 
 complete -F _tl_8cdd0758dfcfdfdb_complete "tl";
 
-
+# Azure completion
+# azure --completion >> ~/azure.completion.sh
+source ~/azure.completion.sh
 
 ###### Golang Paths ######
 export GOPATH=~/go
