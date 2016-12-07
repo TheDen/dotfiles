@@ -4,6 +4,7 @@ alias htop="sudo htop"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs" 
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
+alias gitroot='git rev-parse --show-toplevel'
 
 
 
