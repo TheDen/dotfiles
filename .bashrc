@@ -6,12 +6,8 @@ alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='git rev-parse --show-toplevel'
 
-
-
 ###### COLORS ######
 export GREP_OPTIONS="--color"
-
-
 
 ###### HISTORY ######
 # Eternal bash history.
@@ -27,8 +23,6 @@ export HISTFILE=~/.bash_eternal_history
 # Force prompt to write history after every command.
 # http://superuser.com/questions/20900/bash-history-loss
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
-
-
 
 ###### PS1 ######
 PS1="\[\033[0;31m\]$ \[\033[0m\]"
@@ -57,8 +51,6 @@ man() {
     LESS_TERMCAP_us=$(printf "\e[1;32m") \
     man "$@"
 }
-
-
 
 ###### Completion ######
 complete -cf sudo
@@ -175,7 +167,7 @@ complete -F _tl_8cdd0758dfcfdfdb_complete "tl";
 # azure --completion >> ~/azure.completion.sh
 source ~/azure.completion.sh
 
-# Go completion
+# Golang completion
 
 # Copyright (c) 2014 Kura MIT
 function _go() {
@@ -196,6 +188,18 @@ function _go() {
 }
 
 complete -F _go go
+
+# switch completion
+
+_switch_bash_autocomplete() {
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    opts=$( ${COMP_WORDS[0]} --completion-bash ${COMP_WORDS[@]:1:$COMP_CWORD} )
+    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+    return 0
+}
+complete -F _switch_bash_autocomplete switch
 
 ###### Golang Paths ######
 export GOPATH=~/go
