@@ -4,7 +4,7 @@ alias htop="sudo htop"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs" 
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
-alias gitroot='cd $(git rev-parse --show-toplevel)'
+alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
 
 ###### COLORS ######
 export GREP_OPTIONS="--color"
@@ -204,3 +204,6 @@ complete -F _switch_bash_autocomplete switch
 ###### Golang Paths ######
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
+
+export NVM_DIR="/Users/deniskhoshaba/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
