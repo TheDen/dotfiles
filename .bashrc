@@ -5,6 +5,8 @@ alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
+alias bluetoothreset='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
+alias macdown='/Applications/MacDown.app/Contents/MacOS/MacDown'
 
 ###### COLORS ######
 export GREP_OPTIONS="--color"
@@ -126,43 +128,6 @@ _pip_completion()
 }
 complete -o default -F _pip_completion pip
 
-# tl completionm
-source <(tl _completion --generate-hook)
-
-function _tl_8cdd0758dfcfdfdb_complete {
-
-
-    local CMDLINE_CONTENTS="$COMP_LINE"
-    local CMDLINE_CURSOR_INDEX="$COMP_POINT"
-    local CMDLINE_WORDBREAKS="$COMP_WORDBREAKS";
-
-    export CMDLINE_CONTENTS CMDLINE_CURSOR_INDEX CMDLINE_WORDBREAKS
-
-    local RESULT STATUS;
-
-    RESULT="$(/usr/local/bin/tl _completion)";
-    STATUS=$?;
-
-    local cur;
-    _get_comp_words_by_ref -n : cur;
-
-
-    if [ $STATUS -eq 200 ]; then
-        _filedir;
-        return 0;
-
-    elif [ $STATUS -ne 0 ]; then
-        echo -e "$RESULT";
-        return $?;
-    fi;
-
-    COMPREPLY=(`compgen -W "$RESULT" -- $cur`);
-
-    __ltrim_colon_completions "$cur";
-};
-
-complete -F _tl_8cdd0758dfcfdfdb_complete "tl";
-
 # Azure completion
 # azure --completion >> ~/azure.completion.sh
 source ~/azure.completion.sh
@@ -189,17 +154,6 @@ function _go() {
 
 complete -F _go go
 
-# switch completion
-
-_switch_bash_autocomplete() {
-    local cur prev opts base
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    opts=$( ${COMP_WORDS[0]} --completion-bash ${COMP_WORDS[@]:1:$COMP_CWORD} )
-    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-    return 0
-}
-complete -F _switch_bash_autocomplete switch
 
 ###### Golang Paths ######
 export GOPATH=~/go
