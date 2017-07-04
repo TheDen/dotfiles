@@ -6,6 +6,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'fatih/vim-go'
 Plugin 'pangloss/vim-javascript'
 Plugin 'ervandew/supertab'
+Plugin 'rdolgushin/groovy.vim'
 call vundle#end()            " required
 filetype plugin indent on    " required
 :syntax on
