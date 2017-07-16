@@ -159,5 +159,5 @@ complete -F _go go
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 
-export NVM_DIR="/Users/deniskhoshaba/.nvm"
+export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
