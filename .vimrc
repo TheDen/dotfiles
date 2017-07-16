@@ -27,3 +27,6 @@ filetype plugin indent on    " required
 filetype plugin indent on
 :set tabstop=2
 :set shiftwidth=2
+
+set backspace=indent,eol,start
+
