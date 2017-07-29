@@ -130,10 +130,11 @@ complete -o default -F _pip_completion pip
 
 # Azure completion
 # azure --completion >> ~/azure.completion.sh
-source ~/azure.completion.sh
+if [ -f ~/azure.completion.sh ]; then
+  source ~/azure.completion.sh
+fi
 
 # Golang completion
-
 # Copyright (c) 2014 Kura MIT
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
