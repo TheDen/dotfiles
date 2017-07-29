@@ -5,8 +5,9 @@ alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
-alias bluetoothreset='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
-alias macdown='/Applications/MacDown.app/Contents/MacOS/MacDown'
+alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
+alias macdown="usr/local/bin/MacDown"
+alias flushDNSMac="sudo killall -HUP mDNSResponder"
 
 ###### COLORS ######
 export GREP_OPTIONS="--color"
