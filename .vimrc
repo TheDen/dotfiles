@@ -30,3 +30,7 @@ filetype plugin indent on
 
 set backspace=indent,eol,start
 
+
+au BufReadPost Jenkinsfile set syntax=groovy
+au BufReadPost Jenkinsfile set filetype=groovy
+
