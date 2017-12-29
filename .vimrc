@@ -7,12 +7,13 @@ Plugin 'fatih/vim-go'
 Plugin 'pangloss/vim-javascript'
 Plugin 'ervandew/supertab'
 Plugin 'rdolgushin/groovy.vim'
+Plugin 'sheerun/vim-polyglot'
 call vundle#end()            " required
 filetype plugin indent on    " required
 :syntax on
 :set autoindent
 :set hlsearch
-":set number 
+":set number
 :set cursorline
 :set wildmenu
 :set showmatch
@@ -20,9 +21,10 @@ filetype plugin indent on    " required
 :set hlsearch
 :nnoremap <leader>u :GundoToggle<CR>
 
+:set noexpandtab
+:retab!
 :set expandtab
-:set shiftwidth=2
-:set softtabstop=2 
+:retab!
 
 filetype plugin indent on
 :set tabstop=2
@@ -30,7 +32,12 @@ filetype plugin indent on
 
 set backspace=indent,eol,start
 
-
 au BufReadPost Jenkinsfile set syntax=groovy
 au BufReadPost Jenkinsfile set filetype=groovy
 
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+autocmd BufWinLeave * call clearmatches()
