@@ -1,7 +1,7 @@
 ###### ALIASES ######
 alias ll="ls -alF"
 alias htop="sudo htop"
-alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs" 
+alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
@@ -10,7 +10,7 @@ alias macdown="/usr/local/bin/macdown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
 
 ###### COLORS ######
-export GREP_OPTIONS="--color"
+#export GREP_OPTIONS="--color"
 
 ###### HISTORY ######
 # Eternal bash history.
@@ -30,7 +30,7 @@ PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 ###### PS1 ######
 PS1="\[\033[0;31m\]$ \[\033[0m\]"
 export PYTHONSTARTUP=~/.pythonrc
-force_color_prompt=yes
+#force_color_prompt=yes
 
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
@@ -163,3 +163,23 @@ export PATH=$PATH:$GOPATH/bin
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+_cheatsh_complete_curl()
+{
+    local cur prev opts
+    _get_comp_words_by_ref -n : cur
+
+    COMPREPLY=()
+    #cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="$(curl -s cheat.sh/:list | sed s@^@cheat.sh/@)"
+
+    if [[ ${cur} == cheat.sh/* ]] ; then
+		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+		__ltrim_colon_completions "$cur"
+        return 0
+    fi
+}
+complete -F _cheatsh_complete_curl curl
+
+
