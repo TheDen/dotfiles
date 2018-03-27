@@ -10,25 +10,24 @@ Plugin 'rdolgushin/groovy.vim'
 Plugin 'sheerun/vim-polyglot'
 call vundle#end()            " required
 filetype plugin indent on    " required
-:syntax on
-:set autoindent
-:set hlsearch
+syntax on
+set autoindent
+set hlsearch
 ":set number
-:set cursorline
-:set wildmenu
-:set showmatch
-:set incsearch
-:set hlsearch
-:nnoremap <leader>u :GundoToggle<CR>
+set cursorline
+set wildmenu
+set showmatch
+set incsearch
+set hlsearch
+nnoremap <leader>u :GundoToggle<CR>
 
-:set noexpandtab
-:retab!
-:set expandtab
-:retab!
+set expandtab
+retab!
 
 filetype plugin indent on
-:set tabstop=2
-:set shiftwidth=2
+set tabstop=2
+set shiftwidth=2
+set expandtab
 
 set backspace=indent,eol,start
 
@@ -41,3 +40,5 @@ autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
 autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
+
+"map <fn-Tab> :set number!<RETURN>
