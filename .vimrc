@@ -21,9 +21,6 @@ set incsearch
 set hlsearch
 nnoremap <leader>u :GundoToggle<CR>
 
-set expandtab
-retab!
-
 filetype plugin indent on
 set tabstop=2
 set shiftwidth=2
