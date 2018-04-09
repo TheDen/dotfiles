@@ -182,4 +182,4 @@ _cheatsh_complete_curl()
 }
 complete -F _cheatsh_complete_curl curl
 
-
+source <(kubectl completion bash)
