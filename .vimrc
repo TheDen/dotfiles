@@ -25,6 +25,7 @@ filetype plugin indent on
 set tabstop=2
 set shiftwidth=2
 set expandtab
+autocmd FileType python set tabstop=2|set shiftwidth=2|set expandtab
 
 set backspace=indent,eol,start
 
