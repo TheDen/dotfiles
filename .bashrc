@@ -8,6 +8,7 @@ alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
 alias macdown="/usr/local/bin/macdown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
+alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -181,5 +182,6 @@ _cheatsh_complete_curl()
     fi
 }
 complete -F _cheatsh_complete_curl curl
+
 
 source <(kubectl completion bash)
