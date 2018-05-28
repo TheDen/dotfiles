@@ -9,7 +9,9 @@ Plugin 'ervandew/supertab'
 Plugin 'rdolgushin/groovy.vim'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'matze/vim-move'
+Plugin 'ambv/black'
 call vundle#end()            " required
+
 filetype plugin indent on    " required
 syntax on
 set ttyfast
@@ -48,5 +50,3 @@ autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
 
 let g:move_key_modifier = 'C'
-
-"map <fn-Tab> :set number!<RETURN>
