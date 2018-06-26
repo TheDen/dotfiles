@@ -9,6 +9,7 @@ alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHos
 alias macdown="/usr/local/bin/macdown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
 alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
+alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -185,3 +186,4 @@ complete -F _cheatsh_complete_curl curl
 
 
 source <(kubectl completion bash)
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
