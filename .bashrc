@@ -10,6 +10,8 @@ alias macdown="/usr/local/bin/macdown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
 alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
+alias sha256sum="shasum -a 256"
+alias sha512sum="shasum -a 512"
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -164,7 +166,7 @@ export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 _cheatsh_complete_curl()
 {
