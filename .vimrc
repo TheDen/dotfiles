@@ -79,4 +79,4 @@ autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
 
-let g:move_key_modifier = 'C' " ctrl+k moves linee up, ctrl+j moves line down
+let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
