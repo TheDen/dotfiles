@@ -47,7 +47,7 @@ if &term =~ 'xterm'
   set t_ut=
 endif
 
-""" Autocomplete in minu
+""" Autocomplete in menu
 set wildmenu
 set wildmode=longest:list,full
 
