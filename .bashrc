@@ -4,7 +4,7 @@ alias htop="sudo htop"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
-alias gitroot='cd $(git rev-parse --show-toplevel) && echo "$_"'
+alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
 alias macdown="/usr/local/bin/macdown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
@@ -12,6 +12,7 @@ alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
+alias bksr="(gitroot && bksr)"
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -63,22 +64,17 @@ man() {
 complete -cf sudo
 complete -cf man
 
-# Git completion
-if [ -f ~/.git-completion.bash ]; then
-  . ~/.git-completion.bash
-fi
-
 # AWS completion
 complete -C aws_completer aws n
 
 ## brew completion
 if which brew >/dev/null 2>&1; then
-  if [ -f `brew --prefix`/etc/bash_completion ]; then
-    . `brew --prefix`/etc/bash_completion
+  if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    . $(brew --prefix)/etc/bash_completion
   fi
 
-  if [ -f `brew --prefix`/Library/Contributions/brew_bash_completion.sh ]; then
-    . `brew --prefix`/Library/Contributions/brew_bash_completion.sh
+  if [ -f $(brew --prefix)/Library/Contributions/brew_bash_completion.sh ]; then
+    . $(brew --prefix)/Library/Contributions/brew_bash_completion.sh
   fi
 fi
 
