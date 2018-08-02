@@ -78,10 +78,6 @@ if which brew >/dev/null 2>&1; then
   fi
 fi
 
-#if [ -f $(brew --prefix)/etc/bash_completion ]; then
-#  . $(brew --prefix)/etc/bash_completion
-#fi
-
 # ssh completion
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
 
@@ -114,12 +110,6 @@ _sshcomplete() {
 }
 complete -o default -o nospace -F _sshcomplete ssh
 
-# npm (Node Package Manager) completion
-#if command -v npm &>/dev/null
-#then
-#  eval "$(npm completion)"
-#fi
-
 # pip bash completion
 _pip_completion()
 {
@@ -128,12 +118,6 @@ _pip_completion()
     PIP_AUTO_COMPLETE=1 $1 ) )
 }
 complete -o default -F _pip_completion pip
-
-# Azure completion
-# azure --completion >> ~/azure.completion.sh
-if [ -f ~/azure.completion.sh ]; then
-  source ~/azure.completion.sh
-fi
 
 # Golang completion
 # Copyright (c) 2014 Kura MIT
@@ -155,7 +139,6 @@ function _go() {
 }
 
 complete -F _go go
-
 
 ###### Golang Paths ######
 export GOPATH=~/go
@@ -181,7 +164,6 @@ _cheatsh_complete_curl()
     fi
 }
 complete -F _cheatsh_complete_curl curl
-
 
 source <(kubectl completion bash)
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
