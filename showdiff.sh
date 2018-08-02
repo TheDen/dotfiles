@@ -12,16 +12,17 @@ if [ ! -n "$(command -v colordiff)" ]; then
 fi
 
 for i in $(git ls-files | grep -v ".git\|$BASENAME"); do
-  echo $i
   localfile=$(find ~/ -iname "$i" -print -quit 2> /dev/null)
-  if [ -n "$localfile" ] ; then
-    DIFF="$($diffcmd "$i" "$(find ~/ -iname "$i" -print -quit 2> /dev/null)")"
-    if [ -n "$DIFF" ] ; then
+  if [ -n "$localfile" ]; then
+    DIFF="$($diffcmd "$i" "$localfile")"
+    if [ -n "$DIFF" ]; then
       echo "====================="
       echo "$i"
       echo "$DIFF"
       echo "====================="
     fi
+  else
+    echo "Can't find $i locally"
   fi
   localfile=""
   DIFF=""
