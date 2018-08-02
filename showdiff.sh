@@ -12,12 +12,12 @@ if [ ! -n "$(command -v colordiff)" ]; then
 fi
 
 for i in $(git ls-files | grep -v ".git\|$BASENAME"); do
-  localfile=$(find ~/ -iname "$i" -print -quit 2> /dev/null)
+  localfile=$(find ~ -iname "$i" -print -quit 2> /dev/null)
   if [ -n "$localfile" ]; then
     DIFF="$($diffcmd "$i" "$localfile")"
     if [ -n "$DIFF" ]; then
       echo "====================="
-      echo "$i"
+      echo "diff of $i $localfile"
       echo "$DIFF"
       echo "====================="
     fi
