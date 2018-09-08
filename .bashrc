@@ -13,6 +13,8 @@ alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
 alias bksr="(gitroot && bksr)"
+alias ed="ed -p\* "$@""
+alias getlog='buildkite-cli -c $(git rev-parse --short HEAD) -p $(basename $(git rev-parse --show-toplevel))'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -144,9 +146,6 @@ complete -F _go go
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
 _cheatsh_complete_curl()
 {
     local cur prev opts
@@ -166,4 +165,7 @@ _cheatsh_complete_curl()
 complete -F _cheatsh_complete_curl curl
 
 source <(kubectl completion bash)
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
