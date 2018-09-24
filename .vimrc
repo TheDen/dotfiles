@@ -80,3 +80,8 @@ autocmd InsertLeave * match ExtraWhitespace /\s\+$/
 autocmd BufWinLeave * call clearmatches()
 
 let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
+
+" autocmd bufwritepost *.js silent !semistandard % --fix
+" set autoread
+
+set rtp+=$GOPATH/src/golang.org/x/lint/misc/vim

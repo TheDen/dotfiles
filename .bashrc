@@ -14,7 +14,7 @@ alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
 alias bksr="(gitroot && bksr)"
 alias ed="ed -p\* "$@""
-alias getlog='buildkite-cli -c $(git rev-parse --short HEAD) -p $(basename $(git rev-parse --show-toplevel))'
+alias getlog='buildkite-cli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel))'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
