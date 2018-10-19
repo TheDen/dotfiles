@@ -1,4 +1,5 @@
 ###### ALIASES ######
+alias vi="vim"
 alias ll="ls -alF"
 alias htop="sudo htop"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
@@ -14,7 +15,7 @@ alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
 alias bksr="(gitroot && bksr)"
 alias ed="ed -p\* "$@""
-alias getlog='buildkite-cli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel))'
+alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel)) -f'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -169,3 +170,6 @@ source <(kubectl completion bash)
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+eval "$(bkcli --completion-script-bash)"
