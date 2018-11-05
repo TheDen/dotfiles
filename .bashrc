@@ -16,6 +16,8 @@ alias sha512sum="shasum -a 512"
 alias bksr="(gitroot && bksr)"
 alias ed="ed -p\* "$@""
 alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel)) -f'
+alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
+alias k='kubectl'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
@@ -63,14 +65,16 @@ man() {
     man "$@"
 }
 
-###### Completion ######
+###### Completions ######
 complete -cf sudo
 complete -cf man
+complete -o default -F __start_kubectl k
+eval "$(bkcli --completion-script-bash)"
 
-# AWS completion
+###### AWS completion ######
 complete -C aws_completer aws n
 
-## brew completion
+###### brew completion ######
 if which brew >/dev/null 2>&1; then
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
     . $(brew --prefix)/etc/bash_completion
@@ -81,9 +85,8 @@ if which brew >/dev/null 2>&1; then
   fi
 fi
 
-# ssh completion
+###### ssh completion ######
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
-
 _sshcomplete() {
   local CURRENT_PROMPT="${COMP_WORDS[COMP_CWORD]}"
   if [[ ${CURRENT_PROMPT} == *@*  ]] ; then
@@ -113,7 +116,7 @@ _sshcomplete() {
 }
 complete -o default -o nospace -F _sshcomplete ssh
 
-# pip bash completion
+###### pip bash completion ######
 _pip_completion()
 {
   COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
@@ -122,8 +125,7 @@ _pip_completion()
 }
 complete -o default -F _pip_completion pip
 
-# Golang completion
-# Copyright (c) 2014 Kura MIT
+###### Golang completion ######
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   case "${COMP_WORDS[COMP_CWORD-1]}" in
@@ -140,36 +142,27 @@ function _go() {
   esac
   return 0
 }
-
 complete -F _go go
 
 ###### Golang Paths ######
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 
-_cheatsh_complete_curl()
-{
-    local cur prev opts
-    _get_comp_words_by_ref -n : cur
-
-    COMPREPLY=()
-    #cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="$(curl -s cheat.sh/:list | sed s@^@cheat.sh/@)"
-
-    if [[ ${cur} == cheat.sh/* ]] ; then
-		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-		__ltrim_colon_completions "$cur"
-        return 0
-    fi
-}
-complete -F _cheatsh_complete_curl curl
-
 source <(kubectl completion bash)
 
+###### nvm config ######
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+# added by travis gem
+[ -f /Users/kho027/.travis/travis.sh ] && source /Users/kho027/.travis/travis.sh
 
-eval "$(bkcli --completion-script-bash)"
+###### Functions ######
+namespace() {
+  if [ -z "$1" ]; then
+    :
+  else
+    kubectl config set-context $(kubectl config current-context) --namespace="${1}"
+  fi
+}
