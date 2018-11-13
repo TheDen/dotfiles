@@ -18,6 +18,7 @@ alias ed="ed -p\* "$@""
 alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel)) -f'
 alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
 alias k='kubectl'
+alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 
 ###### COLORS ######
 #export GREP_OPTIONS="--color"
