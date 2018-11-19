@@ -85,3 +85,7 @@ let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
 " set autoread
 
 set rtp+=$GOPATH/src/golang.org/x/lint/misc/vim
+
+"" map :Black
+nmap ,= :Black<CR>
+vmap ,= :Black<CR>
