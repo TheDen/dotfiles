@@ -20,7 +20,8 @@ alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Cres
 alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 
-###### COLORS ######
+###### ENV VARS ######
+export EDITOR=vim
 #export GREP_OPTIONS="--color"
 
 ###### HISTORY ######
@@ -151,6 +152,12 @@ export PATH=$PATH:$GOPATH/bin
 
 source <(kubectl completion bash)
 
+###### rbenv Path ######
+export PATH="$HOME/.rbenv/bin:$PATH"
+
+###### HOME Paths ######
+export PATH="$HOME/bin:$PATH"
+
 ###### nvm config ######
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -166,4 +173,12 @@ namespace() {
   else
     kubectl config set-context $(kubectl config current-context) --namespace="${1}"
   fi
+}
+
+calculate() {
+	echo "$*" | bc -l;
+}
+
+quick() {
+  tmux split-window -p 33 $EDITOR $@ || exit;
 }
