@@ -57,13 +57,13 @@ man() {
 
 man() {
   env \
-    LESS_TERMCAP_mb=$(printf "\e[1;31m") \
-    LESS_TERMCAP_md=$(printf "\e[1;31m") \
-    LESS_TERMCAP_me=$(printf "\e[0m") \
-    LESS_TERMCAP_se=$(printf "\e[0m") \
-    LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
-    LESS_TERMCAP_ue=$(printf "\e[0m") \
-    LESS_TERMCAP_us=$(printf "\e[1;32m") \
+    LESS_TERMCAP_mb="$(printf "\e[1;31m")" \
+    LESS_TERMCAP_md="$(printf "\e[1;31m")" \
+    LESS_TERMCAP_me="$(printf "\e[0m")" \
+    LESS_TERMCAP_se="$(printf "\e[0m")" \
+    LESS_TERMCAP_so="$(printf "\e[1;44;33m")" \
+    LESS_TERMCAP_ue="$(printf "\e[0m")" \
+    LESS_TERMCAP_us="$(printf "\e[1;32m")" \
     man "$@"
 }
 
@@ -71,20 +71,27 @@ man() {
 complete -cf sudo
 complete -cf man
 complete -o default -F __start_kubectl k
+complete -F _kube_contexts kcontext
+complete -F _kube_namespaces knamespace
 eval "$(bkcli --completion-script-bash)"
 
 ###### AWS completion ######
 complete -C aws_completer aws n
 
 ###### brew completion ######
-if which brew >/dev/null 2>&1; then
-  if [ -f $(brew --prefix)/etc/bash_completion ]; then
-    . $(brew --prefix)/etc/bash_completion
+if command -v brew >/dev/null 2>&1; then
+  if [ -f "$(brew --prefix)"/etc/bash_completion ]; then
+    . "$(brew --prefix)"/etc/bash_completion
   fi
 
-  if [ -f $(brew --prefix)/Library/Contributions/brew_bash_completion.sh ]; then
-    . $(brew --prefix)/Library/Contributions/brew_bash_completion.sh
+  if [ -f "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh ]; then
+    . "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh
   fi
+fi
+
+###### HELM completion ######
+if command -v helm >/dev/null 2>&1; then
+  eval "$(helm completion bash)"
 fi
 
 ###### ssh completion ######
@@ -176,9 +183,10 @@ namespace() {
 }
 
 calculate() {
-	echo "$*" | bc -l;
+  echo "$*" | bc -l;
 }
 
 quick() {
-  tmux split-window -p 33 $EDITOR $@ || exit;
+  tmux split-window -p 33 ${EDITOR} "$@" || exit;
 }
+. "${HOME}/.acme.sh/acme.sh.env"
