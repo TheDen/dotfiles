@@ -1,6 +1,6 @@
 "" Vundle Start
 set nocompatible
-filetype off
+filetype on
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
@@ -12,6 +12,7 @@ Plugin 'sheerun/vim-polyglot'
 Plugin 'matze/vim-move'
 Plugin 'ambv/black'
 Plugin 'ekalinin/Dockerfile.vim'
+Plugin 'z0mbix/vim-shfmt'
 call vundle#end()
 """ End Vundle
 
@@ -89,3 +90,9 @@ set rtp+=$GOPATH/src/golang.org/x/lint/misc/vim
 "" map :Black
 nmap ,= :Black<CR>
 vmap ,= :Black<CR>
+
+let g:go_highlight_space_tab_error = 0
+
+" shfmt configuration
+let g:shfmt_extra_args = '-i 2 -ci -sr'
+autocmd BufWritePost *.sh Shfmt
