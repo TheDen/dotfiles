@@ -190,3 +190,8 @@ quick() {
   tmux split-window -p 33 ${EDITOR} "$@" || exit;
 }
 . "${HOME}/.acme.sh/acme.sh.env"
+
+shellformat() {
+  local dir="${1}"
+  shfmt -f "${dir:=.}" | xargs -n1 shfmt -i 2 -ci -sr -w
+}
