@@ -95,4 +95,4 @@ let g:go_highlight_space_tab_error = 0
 
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
-autocmd BufWritePost *.sh Shfmt
+let g:shfmt_fmt_on_save = 1

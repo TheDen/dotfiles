@@ -79,7 +79,7 @@ eval "$(bkcli --completion-script-bash)"
 complete -C aws_completer aws n
 
 ###### brew completion ######
-if command -v brew >/dev/null 2>&1; then
+if command -v brew > /dev/null 2>&1; then
   if [ -f "$(brew --prefix)"/etc/bash_completion ]; then
     . "$(brew --prefix)"/etc/bash_completion
   fi
@@ -90,7 +90,7 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 ###### HELM completion ######
-if command -v helm >/dev/null 2>&1; then
+if command -v helm > /dev/null 2>&1; then
   eval "$(helm completion bash)"
 fi
 
@@ -98,7 +98,7 @@ fi
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
 _sshcomplete() {
   local CURRENT_PROMPT="${COMP_WORDS[COMP_CWORD]}"
-  if [[ ${CURRENT_PROMPT} == *@*  ]] ; then
+  if [[ ${CURRENT_PROMPT} == *@* ]]; then
     local OPTIONS="-P ${CURRENT_PROMPT/@*/}@ -- ${CURRENT_PROMPT/*@/}"
   else
     local OPTIONS=" -- ${CURRENT_PROMPT}"
@@ -106,19 +106,19 @@ _sshcomplete() {
 
   # parse all defined hosts from .ssh/config
   if [ -r "$HOME/.ssh/config" ]; then
-    COMPREPLY=($(compgen -W "$(grep ^Host "$HOME/.ssh/config" | awk '{for (i=2; i<=NF; i++) print $i}' )" ${OPTIONS}) )
+    COMPREPLY=($(compgen -W "$(grep ^Host "$HOME/.ssh/config" | awk '{for (i=2; i<=NF; i++) print $i}')" ${OPTIONS}))
   fi
 
   # parse all hosts found in .ssh/known_hosts
   if [ -r "$HOME/.ssh/known_hosts" ]; then
-    if grep -v -q -e '^ ssh-rsa' "$HOME/.ssh/known_hosts" ; then
-      COMPREPLY=( ${COMPREPLY[@]} $(compgen -W "$( awk '{print $1}' "$HOME/.ssh/known_hosts" | grep -v ^\| | cut -d, -f 1 | sed -e 's/\[//g' | sed -e 's/\]//g' | cut -d: -f1 | grep -v ssh-rsa)" ${OPTIONS}) )
+    if grep -v -q -e '^ ssh-rsa' "$HOME/.ssh/known_hosts"; then
+      COMPREPLY=(${COMPREPLY[@]} $(compgen -W "$(awk '{print $1}' "$HOME/.ssh/known_hosts" | grep -v ^\| | cut -d, -f 1 | sed -e 's/\[//g' | sed -e 's/\]//g' | cut -d: -f1 | grep -v ssh-rsa)" ${OPTIONS}))
     fi
   fi
 
   # parse hosts defined in /etc/hosts
   if [ -r /etc/hosts ]; then
-    COMPREPLY=( ${COMPREPLY[@]} $(compgen -W "$( grep -v '^[[:space:]]*$' /etc/hosts | grep -v '^#' | awk '{for (i=2; i<=NF; i++) print $i}' )" ${OPTIONS}) )
+    COMPREPLY=(${COMPREPLY[@]} $(compgen -W "$(grep -v '^[[:space:]]*$' /etc/hosts | grep -v '^#' | awk '{for (i=2; i<=NF; i++) print $i}')" ${OPTIONS}))
   fi
 
   return 0
@@ -126,18 +126,17 @@ _sshcomplete() {
 complete -o default -o nospace -F _sshcomplete ssh
 
 ###### pip bash completion ######
-_pip_completion()
-{
-  COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+_pip_completion() {
+  COMPREPLY=($(COMP_WORDS="${COMP_WORDS[*]}" \
     COMP_CWORD=$COMP_CWORD \
-    PIP_AUTO_COMPLETE=1 $1 ) )
+    PIP_AUTO_COMPLETE=1 $1))
 }
 complete -o default -F _pip_completion pip
 
 ###### Golang completion ######
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
-  case "${COMP_WORDS[COMP_CWORD-1]}" in
+  case "${COMP_WORDS[COMP_CWORD - 1]}" in
     "go")
       comms="build clean doc env fix fmt get install list run test tool version vet"
       COMPREPLY=($(compgen -W "${comms}" -- ${cur}))
@@ -167,8 +166,8 @@ export PATH="$HOME/bin:$PATH"
 
 ###### nvm config ######
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
 # added by travis gem
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
@@ -183,15 +182,15 @@ namespace() {
 }
 
 calculate() {
-  echo "$*" | bc -l;
+  echo "$*" | bc -l
 }
 
 quick() {
-  tmux split-window -p 33 ${EDITOR} "$@" || exit;
+  tmux split-window -p 33 ${EDITOR} "$@" || exit
 }
 . "${HOME}/.acme.sh/acme.sh.env"
 
 shellformat() {
   local dir="${1}"
-  shfmt -f "${dir:=.}" | xargs -n1 shfmt -i 2 -ci -sr -w
+  shfmt -i 2 -ci -sr -w "${dir:=.}"
 }
