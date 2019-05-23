@@ -194,3 +194,9 @@ shellformat() {
   local dir="${1}"
   shfmt -i 2 -ci -sr -w "${dir:=.}"
 }
+
+function pman() {
+  if [ -d /Applications/Preview.app/ ]; then
+    man -t "${1}" | open -f -a /Applications/Preview.app
+  fi
+}
