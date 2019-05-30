@@ -200,3 +200,12 @@ function pman() {
     man -t "${1}" | open -f -a /Applications/Preview.app
   fi
 }
+
+markdown_spellcheck() {
+  if [ -n "${1}" ]; then
+    local checkFiles="${1}"
+  else
+    local checkFiles="**/*.md"
+  fi
+  mdspell --en-au --ignore-numbers -r "${checkFiles}"
+}
