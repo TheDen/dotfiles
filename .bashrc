@@ -19,6 +19,7 @@ alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --sho
 alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
 alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
+alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 
 ###### ENV VARS ######
 export EDITOR=vim
