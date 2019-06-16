@@ -42,7 +42,7 @@ export HISTFILE=~/.bash_eternal_history
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
 ###### PS1 ######
-PS1="\[\033[0;31m\]$ \[\033[0m\]"
+PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 export PYTHONSTARTUP=~/.pythonrc
 
 man() {
