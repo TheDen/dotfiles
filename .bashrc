@@ -20,6 +20,7 @@ alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Cres
 alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
+alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 
 ###### ENV VARS ######
 export EDITOR=vim
@@ -43,7 +44,6 @@ PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 ###### PS1 ######
 PS1="\[\033[0;31m\]$ \[\033[0m\]"
 export PYTHONSTARTUP=~/.pythonrc
-#force_color_prompt=yes
 
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
@@ -74,7 +74,6 @@ complete -cf man
 complete -o default -F __start_kubectl k
 complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
-eval "$(bkcli --completion-script-bash)"
 
 ###### AWS completion ######
 complete -C aws_completer aws n
@@ -193,7 +192,9 @@ quick() {
 
 shellformat() {
   local dir="${1}"
-  shfmt -i 2 -ci -sr -w "${dir:=.}"
+  if command -v shfmt > /dev/null 2>&1; then
+    shfmt -i 2 -ci -sr -w "${dir:=.}"
+  fi
 }
 
 function pman() {
@@ -208,5 +209,7 @@ markdown_spellcheck() {
   else
     local checkFiles="**/*.md"
   fi
-  mdspell --en-au --ignore-numbers -r "${checkFiles}"
+  if command -v mdspell > /dev/null 2>&1; then
+    mdspell --en-au --ignore-numbers -r "${checkFiles}"
+  fi
 }
