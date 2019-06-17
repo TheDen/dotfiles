@@ -213,3 +213,7 @@ markdown_spellcheck() {
     mdspell --en-au --ignore-numbers -r "${checkFiles}"
   fi
 }
+
+2qr() {
+  qrencode $1 -t ANSI256 -o -
+}
