@@ -1,4 +1,9 @@
-###### ALIASES ######
+#!/bin/bash
+
+## Prompt config
+PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
+
+## Aliases
 alias vi="vim"
 alias ll="ls -alF"
 alias htop="sudo htop"
@@ -14,7 +19,6 @@ alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
 alias bksr="(gitroot && bksr)"
-alias ed="ed -p\* "$@""
 alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel)) -f'
 alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
 alias k='kubectl'
@@ -22,29 +26,9 @@ alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 
-###### ENV VARS ######
+## Environment Variables
 export EDITOR=vim
-#export GREP_OPTIONS="--color"
-
-###### HISTORY ######
-# Eternal bash history.
-# ---------------------
-# Undocumented feature which sets the size to "unlimited".
-# http://stackoverflow.com/questions/9457233/unlimited-bash-history
-export HISTFILESIZE=
-export HISTSIZE=
-#export HISTTIMEFORMAT="[%F %T] "
-# Change the file location because certain bash sessions truncate .bash_history file upon close.
-# http://superuser.com/questions/575479/bash-history-truncated-to-500-lines-on-each-login
-export HISTFILE=~/.bash_eternal_history
-# Force prompt to write history after every command.
-# http://superuser.com/questions/20900/bash-history-loss
-PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
-
-###### PS1 ######
-PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 export PYTHONSTARTUP=~/.pythonrc
-
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
     LESS_TERMCAP_md=$'\E[01;38;5;74m' \
@@ -68,33 +52,41 @@ man() {
     man "$@"
 }
 
-###### Completions ######
+## History
+export HISTFILESIZE=
+export HISTSIZE=
+# Change the file location because certain bash sessions truncate .bash_history file upon close.
+export HISTFILE=~/.bash_eternal_history
+# Force prompt to write history after every command.
+PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+
+## Completions
 complete -cf sudo
 complete -cf man
 complete -o default -F __start_kubectl k
 complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
-
-###### AWS completion ######
 complete -C aws_completer aws n
 
-###### brew completion ######
+# completion brew
 if command -v brew > /dev/null 2>&1; then
   if [ -f "$(brew --prefix)"/etc/bash_completion ]; then
-    . "$(brew --prefix)"/etc/bash_completion
+    # shellcheck source=/dev/null
+    . "$(brew --prefix)/etc/bash_completion"
   fi
 
   if [ -f "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh ]; then
+    # shellcheck source=/dev/null
     . "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh
   fi
 fi
 
-###### HELM completion ######
+# completion helm
 if command -v helm > /dev/null 2>&1; then
   eval "$(helm completion bash)"
 fi
 
-###### ssh completion ######
+# completion ssh
 export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
 _sshcomplete() {
   local CURRENT_PROMPT="${COMP_WORDS[COMP_CWORD]}"
@@ -125,7 +117,7 @@ _sshcomplete() {
 }
 complete -o default -o nospace -F _sshcomplete ssh
 
-###### pip bash completion ######
+# completion pip
 _pip_completion() {
   COMPREPLY=($(COMP_WORDS="${COMP_WORDS[*]}" \
     COMP_CWORD=$COMP_CWORD \
@@ -133,7 +125,7 @@ _pip_completion() {
 }
 complete -o default -F _pip_completion pip
 
-###### Golang completion ######
+# completion go
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   case "${COMP_WORDS[COMP_CWORD - 1]}" in
@@ -142,8 +134,8 @@ function _go() {
       COMPREPLY=($(compgen -W "${comms}" -- ${cur}))
       ;;
     *)
-      files=$(find ${PWD} -mindepth 1 -maxdepth 1 -type f -iname "*.go" -exec basename {} \;)
-      dirs=$(find ${PWD} -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+      files="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type f -iname "*.go" -exec basename {} \;)"
+      dirs="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
       repl="${files} ${dirs}"
       COMPREPLY=($(compgen -W "${repl}" -- ${cur}))
       ;;
@@ -152,32 +144,29 @@ function _go() {
 }
 complete -F _go go
 
-###### Golang Paths ######
+# PATH exports
+export PATH="$HOME/bin:$PATH"
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
-
-source <(kubectl completion bash)
-
-###### rbenv Path ######
 export PATH="$HOME/.rbenv/bin:$PATH"
 
-###### HOME Paths ######
-export PATH="$HOME/bin:$PATH"
-
-###### nvm config ######
+# nvm config
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # added by travis gem
+# shellcheck source=/dev/null
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
 
-###### Functions ######
+# Custom Functions
 namespace() {
   if [ -z "$1" ]; then
     :
   else
-    kubectl config set-context $(kubectl config current-context) --namespace="${1}"
+    kubectl config set-context "$(kubectl config current-context)" --namespace="${1}"
   fi
 }
 
@@ -188,6 +177,7 @@ calculate() {
 quick() {
   tmux split-window -p 33 ${EDITOR} "$@" || exit
 }
+# shellcheck source=/dev/null
 . "${HOME}/.acme.sh/acme.sh.env"
 
 shellformat() {
@@ -215,5 +205,5 @@ markdown_spellcheck() {
 }
 
 2qr() {
-  qrencode $1 -t ANSI256 -o -
+  qrencode "$1" -t ANSI256 -o -
 }
