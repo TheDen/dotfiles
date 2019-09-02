@@ -24,6 +24,10 @@ alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
+alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n'" $1
+
+## Autocomplete Ignore
+EXECIGNORE=$(which kustomize || true)
 
 ## Environment Variables
 export EDITOR=vim
@@ -150,11 +154,11 @@ export PATH=$PATH:$GOPATH/bin
 export PATH="$HOME/.rbenv/bin:$PATH"
 
 # nvm config
-export NVM_DIR="$HOME/.nvm"
+#export NVM_DIR="$HOME/.nvm"
 # shellcheck source=/dev/null
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 # shellcheck source=/dev/null
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # added by travis gem
 # shellcheck source=/dev/null
