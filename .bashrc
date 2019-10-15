@@ -26,6 +26,8 @@ alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker 
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n'" $1
 alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
+alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
+alias clusterevents="kubectl get events --all-namespaces"
 
 ## Autocomplete Ignore
 EXECIGNORE=$(which kustomize || true)
