@@ -22,9 +22,10 @@ alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --sho
 alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
 alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
-alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
+alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n'" $1
+alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
 
 ## Autocomplete Ignore
 EXECIGNORE=$(which kustomize || true)
