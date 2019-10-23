@@ -92,6 +92,8 @@ nmap ,= :Black<CR>
 vmap ,= :Black<CR>
 
 let g:go_highlight_space_tab_error = 0
+let g:go_def_mode='gopls'
+let g:go_info_mode='gopls'
 
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
