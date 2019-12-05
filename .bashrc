@@ -28,6 +28,7 @@ alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}
 alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
+alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
 
 ## Autocomplete Ignore
 EXECIGNORE=$(which kustomize || true)
@@ -212,4 +213,10 @@ markdown_spellcheck() {
 
 2qr() {
   qrencode "$1" -t ANSI256 -o -
+}
+
+dockerfile_format() {
+  if command -v dockerfile-utils > /dev/null 2>&1; then
+    dockerfile-utils format --spaces 4 "$1"
+  fi
 }
