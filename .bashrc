@@ -35,7 +35,7 @@ EXECIGNORE=$(which kustomize || true)
 
 ## Environment Variables
 export EDITOR=vim
-export PYTHONSTARTUP=~/.pythonrc
+#export PYTHONSTARTUP=~/.pythonrc
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
     LESS_TERMCAP_md=$'\E[01;38;5;74m' \
@@ -155,7 +155,6 @@ complete -F _go go
 export PATH="$HOME/bin:$PATH"
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
-export PATH="$HOME/.rbenv/bin:$PATH"
 
 # nvm config
 #export NVM_DIR="$HOME/.nvm"
@@ -219,4 +218,12 @@ dockerfile_format() {
   if command -v dockerfile-utils > /dev/null 2>&1; then
     dockerfile-utils format --spaces 4 "$1"
   fi
+}
+
+gh-open() {
+  file=${1:-""}
+  git_branch=${2:-$(git symbolic-ref --quiet --short HEAD)}
+  git_project_root=$(git config remote.origin.url | sed "s~git@\(.*\):\(.*\)~https://\1/\2~" | sed "s~\(.*\).git\$~\1~")
+  git_directory=$(git rev-parse --show-prefix)
+  open ${git_project_root}/tree/${git_branch}/${git_directory}${file}
 }
