@@ -72,6 +72,8 @@ set backspace=indent,eol,start
 au BufReadPost Jenkinsfile set syntax=groovy
 au BufReadPost Jenkinsfile set filetype=groovy
 
+autocmd BufNewFile,BufRead Dockerfile* setfiletype Dockerfile
+
 " Highlight trailing whitespaces
 highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
