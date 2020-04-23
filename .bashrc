@@ -167,6 +167,8 @@ export PATH=$PATH:$GOPATH/bin
 # shellcheck source=/dev/null
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
 
+[ -f /usr/local/etc/profile.d/z.sh ] && . /usr/local/etc/profile.d/z.sh
+
 # Custom Functions
 namespace() {
   if [ -z "$1" ]; then
