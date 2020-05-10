@@ -31,7 +31,9 @@ alias clusterevents="kubectl get events --all-namespaces"
 alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
 
 ## Autocomplete Ignore
-EXECIGNORE=$(which kustomize || true)
+if command -v kustomize > /dev/null; then
+  EXECIGNORE=$(which kustomize || true)
+fi
 
 ## Environment Variables
 export EDITOR=vim
@@ -185,8 +187,6 @@ calculate() {
 quick() {
   tmux split-window -p 33 ${EDITOR} "$@" || exit
 }
-# shellcheck source=/dev/null
-. "${HOME}/.acme.sh/acme.sh.env"
 
 shellformat() {
   local dir="${1}"
