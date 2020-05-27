@@ -186,3 +186,4 @@ default_border none
 hide_edge_borders both
 exec --no-startup-id xfce4-clipman
 exec --no-startup-id albert
+exec --no-startup-id xbindkeys
