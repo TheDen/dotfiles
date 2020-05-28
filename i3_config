@@ -36,7 +36,9 @@ set $refresh_i3status killall -SIGUSR1 i3status
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status && ~/bin/osd_vol.sh
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status && ~/bin/osd_vol.sh
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status && ~/bin/osd_vol.sh
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status && ~/bin/osd_vol.sh
+bindsym XF86AudioPlay exec --no-startup-id playerctl play-pause
+bindsym XF86AudioNext exec --no-startup-id playerctl next
+bindsym XF86AudioPrev exec --no-startup-id playerctl previous
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -176,10 +178,30 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
+# Enable/disable caps mode
+mode "CAPS" {
+        bindsym Caps_Lock mode "default"
+}
+bindsym Caps_Lock mode "CAPS"
+
+# Enable/disable numeric keyboard
+mode "NUM" {
+        bindsym Num_Lock mode "default"
+}
+bindsym Num_Lock mode "NUM"
+
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
         status_command i3status
+        colors {
+        background #000000
+        statusline #999999
+        focused_workspace  #ffffff #285577
+        active_workspace   #ffffff #333333
+        inactive_workspace #888888 #222222
+        urgent_workspace   #ffffff #900000
+    }
 }
 
 default_border none
