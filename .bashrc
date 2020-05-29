@@ -29,14 +29,18 @@ alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
 alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
+alias pbcopy="xclip -sel clip"
+alias ls='ls --color=auto'
 
 ## Autocomplete Ignore
-if command -v kustomize > /dev/null; then
+if command -v kustomize > /dev/null 2>&1; then
   EXECIGNORE=$(which kustomize || true)
 fi
 
 ## Environment Variables
 export EDITOR=vim
+export VISUAL=vim
+
 #export PYTHONSTARTUP=~/.pythonrc
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
@@ -77,6 +81,7 @@ complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
 complete -C aws_completer aws n
 
+# completion ekctl
 if command -v eksctl @ > /dev/null >&1; then
   . <(eksctl completion bash)
 fi
@@ -158,7 +163,7 @@ function _go() {
 complete -F _go go
 
 # PATH exports
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 
@@ -174,6 +179,7 @@ export PATH=$PATH:$GOPATH/bin
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
 
 [ -f /usr/local/etc/profile.d/z.sh ] && . /usr/local/etc/profile.d/z.sh
+[ -f "${HOME}/.zrc" ] && . "${HOME}/.zrc"
 
 # Custom Functions
 namespace() {
@@ -233,3 +239,9 @@ gh-open() {
   git_directory=$(git rev-parse --show-prefix)
   open ${git_project_root}/tree/${git_branch}/${git_directory}${file}
 }
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f "${HOME}/google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/google-cloud-sdk/path.bash.inc"; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google-cloud-sdk/completion.bash.inc"; fi
