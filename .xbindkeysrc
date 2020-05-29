@@ -1,4 +1,4 @@
-# Thinkpad Key
+# thinkpad Key
 "alacritty"
   m:0x0 + c:156
   XF86Launch1
@@ -8,3 +8,7 @@
   m:0x9 + c:54
   Shift+Alt + c
 
+# Kil X applications
+"xkill"
+  m:0xc + c:9
+  Control+Alt + Escape
