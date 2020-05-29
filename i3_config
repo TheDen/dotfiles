@@ -197,6 +197,12 @@ mode "NUM" {
 }
 bindsym Num_Lock mode "NUM"
 
+# Enable/disable INS
+mode "INS" {
+        bindsym Insert mode "default"
+}
+bindsym Insert mode "INS"
+
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
