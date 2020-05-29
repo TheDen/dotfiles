@@ -77,6 +77,10 @@ complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
 complete -C aws_completer aws n
 
+if command -v eksctl @ > /dev/null >&1; then
+  . <(eksctl completion bash)
+fi
+
 # completion brew
 if command -v brew > /dev/null 2>&1; then
   if [ -f "$(brew --prefix)"/etc/bash_completion ]; then
