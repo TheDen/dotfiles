@@ -31,6 +31,8 @@ alias clusterevents="kubectl get events --all-namespaces"
 alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
 alias pbcopy="xclip -sel clip"
 alias ls='ls --color=auto'
+alias private='shopt -uo history'
+alias unprivate='shopt -so history'
 
 ## Autocomplete Ignore
 if command -v kustomize > /dev/null 2>&1; then
