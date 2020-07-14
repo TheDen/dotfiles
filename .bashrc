@@ -33,6 +33,7 @@ alias pbcopy="xclip -sel clip"
 alias ls='ls --color=auto'
 alias private='shopt -uo history'
 alias unprivate='shopt -so history'
+alias hibernate='sudo systemctl hibernate'
 
 ## Autocomplete Ignore
 if command -v kustomize > /dev/null 2>&1; then
@@ -240,6 +241,12 @@ gh-open() {
   git_project_root=$(git config remote.origin.url | sed "s~git@\(.*\):\(.*\)~https://\1/\2~" | sed "s~\(.*\).git\$~\1~")
   git_directory=$(git rev-parse --show-prefix)
   open ${git_project_root}/tree/${git_branch}/${git_directory}${file}
+}
+
+cast() {
+  if [ -n "${1}" ]; then
+    youtube-dl -o - "${1}" | castnow --quiet
+  fi
 }
 
 # The next line updates PATH for the Google Cloud SDK.
