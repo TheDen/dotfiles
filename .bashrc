@@ -4,6 +4,18 @@
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 
 ## Aliases
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ......="cd ../../../../.."
+alias .......="cd ../../../../../.."
+alias ........="cd ../../../../../../.."
+alias .........="cd ../../../../../../../.."
+alias ..........="cd ../../../../../../../../.."
+alias ...........="cd ../../../../../../../../../.."
+alias ............="cd ../../../../../../../../../../.."
+alias .............="cd ../../../../../../../../../../../.."
 alias vi="vim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
@@ -29,8 +41,6 @@ alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
 alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
-alias pbcopy="xclip -sel clip"
-alias ls='ls --color=auto'
 alias private='shopt -uo history'
 alias unprivate='shopt -so history'
 
@@ -232,6 +242,11 @@ dockerfile_format() {
   if command -v dockerfile-utils > /dev/null 2>&1; then
     dockerfile-utils format --spaces 4 "$1"
   fi
+}
+
+webp_convert() {
+  local file="$1"
+  cwebp -q 100 "$file" -o "${file%.*}.webp"
 }
 
 gh-open() {
