@@ -10,7 +10,7 @@ Plugin 'ervandew/supertab'
 Plugin 'rdolgushin/groovy.vim'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'matze/vim-move'
-Plugin 'ambv/black'
+Plugin 'psf/black'
 Plugin 'ekalinin/Dockerfile.vim'
 Plugin 'z0mbix/vim-shfmt'
 call vundle#end()
