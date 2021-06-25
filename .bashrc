@@ -1,4 +1,6 @@
 #!/bin/bash
+eval "$(/opt/homebrew/bin/brew shellenv)"
+#eval $(/usr/local/bin/brew shellenv)
 
 ## Prompt config
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
@@ -23,7 +25,7 @@ alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
-alias macdown="/usr/local/bin/macdown"
+alias macdown="/Applications/MacDown.app/Contents/MacOS/MacDown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
 alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
@@ -36,7 +38,7 @@ alias k='kubectl'
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
-alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n'" $1
+alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' $1"
 alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
@@ -44,7 +46,8 @@ alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.pha
 alias private='shopt -uo history'
 alias unprivate='shopt -so history'
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-alias hibernate='sudo systemctl hibernate'
+alias m1="arch -arm64"
+alias ibrew='arch -x86_64 /usr/local/bin/brew'
 
 ## Autocomplete Ignore
 if command -v kustomize > /dev/null 2>&1; then
@@ -102,14 +105,17 @@ fi
 
 # completion brew
 if command -v brew > /dev/null 2>&1; then
-  if [ -f "$(brew --prefix)"/etc/bash_completion ]; then
+  if [ -f "$(brew --prefix)/etc/bash_completion" ]; then
     # shellcheck source=/dev/null
     . "$(brew --prefix)/etc/bash_completion"
+    for completion in "$(brew --prefix)/etc/bash_completion"; do
+      source "${completion}"
+    done
   fi
 
-  if [ -f "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh ]; then
+  if [ -f "$(brew --prefix)/Library/Contributions/brew_bash_completion.sh" ]; then
     # shellcheck source=/dev/null
-    . "$(brew --prefix)"/Library/Contributions/brew_bash_completion.sh
+    . "$(brew --prefix)/Library/Contributions/brew_bash_completion.sh"
   fi
 fi
 
