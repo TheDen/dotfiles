@@ -48,6 +48,7 @@ alias unprivate='shopt -so history'
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 alias m1="arch -arm64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
+alias upgrade="arch -x86_64 brew upgrade"
 
 ## Autocomplete Ignore
 if command -v kustomize > /dev/null 2>&1; then
