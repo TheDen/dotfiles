@@ -1,23 +1,12 @@
 #!/bin/bash
+eval $(/usr/local/bin/brew shellenv)
 eval "$(/opt/homebrew/bin/brew shellenv)"
-#eval $(/usr/local/bin/brew shellenv)
 
 ## Prompt config
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 
 ## Aliases
 alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .....="cd ../../../.."
-alias ......="cd ../../../../.."
-alias .......="cd ../../../../../.."
-alias ........="cd ../../../../../../.."
-alias .........="cd ../../../../../../../.."
-alias ..........="cd ../../../../../../../../.."
-alias ...........="cd ../../../../../../../../../.."
-alias ............="cd ../../../../../../../../../../.."
-alias .............="cd ../../../../../../../../../../../.."
 alias vi="vim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
@@ -35,11 +24,12 @@ alias bksr="(gitroot && bksr)"
 alias getlog='bkcli -c $(git rev-parse HEAD) -p $(basename $(git rev-parse --show-toplevel)) -f'
 alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative --branches'
 alias k='kubectl'
+alias kubectl="kcolor"
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' $1"
-alias kbuild="/usr/local/bin/kustomize build --load_restrictor none"
+alias kbuild="/opt/homebrew/bin/kustomize build"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
 alias evictedpods="kubectl get pods --all-namespaces --field-selector=status.phase=Failed"
@@ -47,8 +37,9 @@ alias private='shopt -uo history'
 alias unprivate='shopt -so history'
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 alias m1="arch -arm64"
+alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
-alias upgrade="arch -x86_64 brew upgrade"
+alias upgrade="ibrew upgrade && m1 brew upgrade"
 
 ## Autocomplete Ignore
 if command -v kustomize > /dev/null 2>&1; then
@@ -58,6 +49,7 @@ fi
 ## Environment Variables
 export EDITOR=vim
 export VISUAL=vim
+export HOMEBREW_NO_ANALYTICS=1
 
 #export PYTHONSTARTUP=~/.pythonrc
 man() {
@@ -106,17 +98,25 @@ fi
 
 # completion brew
 if command -v brew > /dev/null 2>&1; then
-  if [ -f "$(brew --prefix)/etc/bash_completion" ]; then
+  brew_prefix="$(brew --prefix)"
+  if [ -f "${brew_prefix}/etc/bash_completion" ]; then
     # shellcheck source=/dev/null
-    . "$(brew --prefix)/etc/bash_completion"
-    for completion in "$(brew --prefix)/etc/bash_completion"; do
+    . "${brew_prefix}/etc/bash_completion"
+    for completion in "${brew_prefix}/etc/bash_completion"; do
       source "${completion}"
     done
   fi
 
-  if [ -f "$(brew --prefix)/Library/Contributions/brew_bash_completion.sh" ]; then
+  if [ -d "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d" ]; then
     # shellcheck source=/dev/null
-    . "$(brew --prefix)/Library/Contributions/brew_bash_completion.sh"
+    for completion in $(/usr/local/bin/brew --prefix)/etc/bash_completion.d/*; do
+      source "${completion}"
+    done
+  fi
+
+  if [ -f "${brew_prefix}/Library/Contributions/brew_bash_completion.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${brew_prefix}/Library/Contributions/brew_bash_completion.sh"
   fi
 fi
 
@@ -187,6 +187,7 @@ complete -F _go go
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
 
 # nvm config
 #export NVM_DIR="$HOME/.nvm"
@@ -277,3 +278,6 @@ if [ -f "${HOME}/google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/google-cloud
 
 # The next line enables shell command completion for gcloud.
 if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google-cloud-sdk/completion.bash.inc"; fi
+
+alias pip3="/usr/local/bin/pip3"
+alias python3="/usr/local/bin/python3"
