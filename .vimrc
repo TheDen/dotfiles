@@ -100,3 +100,4 @@ let g:go_info_mode='gopls'
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
 let g:shfmt_fmt_on_save = 1
+
