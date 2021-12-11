@@ -13,8 +13,8 @@ alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
+alias gits='git status'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
-alias macdown="/Applications/MacDown.app/Contents/MacOS/MacDown"
 alias flushDNSMac="sudo killall -HUP mDNSResponder"
 alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
@@ -50,6 +50,7 @@ fi
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
+export GPG_TTY=$(tty)
 
 #export PYTHONSTARTUP=~/.pythonrc
 man() {
@@ -281,3 +282,5 @@ if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google
 
 alias pip3="/usr/local/bin/pip3"
 alias python3="/usr/local/bin/python3"
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"

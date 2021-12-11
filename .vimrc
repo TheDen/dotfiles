@@ -4,15 +4,13 @@ filetype on
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'fatih/vim-go'
-Plugin 'pangloss/vim-javascript'
 Plugin 'ervandew/supertab'
 Plugin 'rdolgushin/groovy.vim'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'matze/vim-move'
 Plugin 'psf/black'
-Plugin 'ekalinin/Dockerfile.vim'
 Plugin 'z0mbix/vim-shfmt'
+Plugin 'fatih/vim-go'
 call vundle#end()
 """ End Vundle
 
@@ -56,10 +54,10 @@ set showmatch " Show matching braces
 set incsearch " Show matches while typing
 
 "" Persistent edit history
-set history=1000
+set history=10000
 set undofile
 set undodir=~/vim_backup
-set undoreload=10000
+set undoreload=100000
 
 set tabstop=2
 set shiftwidth=2
@@ -100,4 +98,3 @@ let g:go_info_mode='gopls'
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
 let g:shfmt_fmt_on_save = 1
-
