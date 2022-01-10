@@ -359,11 +359,13 @@ live_config_reload: true
 # Entries in `shell.args` are passed unmodified as arguments to the shell.
 #
 Default:
-   - (macOS) /opt/homebrew/bin/bash
+   - (macOS) /opt/homebrew/bin/bash --login
 #   - (Linux) user login shell
 #   - (Windows) powershell
 shell:
   program: /opt/homebrew/bin/bash
+  args:
+    - --login
 
 # Startup directory
 #
