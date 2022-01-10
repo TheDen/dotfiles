@@ -1,5 +1,5 @@
 #!/bin/bash
-eval $(/usr/local/bin/brew shellenv)
+eval "$(/usr/local/bin/brew shellenv)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 ## Prompt config
@@ -28,7 +28,6 @@ alias kubectl="kcolor"
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
-alias curlstatus="curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' $1"
 alias kbuild="/opt/homebrew/bin/kustomize build"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
 alias clusterevents="kubectl get events --all-namespaces"
@@ -40,17 +39,21 @@ alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias upgrade="ibrew upgrade && m1 brew upgrade"
+alias pip3="/usr/local/bin/pip3"
+alias python3="/usr/local/bin/python3"
 
-## Autocomplete Ignore
-if command -v kustomize > /dev/null 2>&1; then
-  EXECIGNORE=$(which kustomize || true)
-fi
-
-## Environment Variables
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
-export GPG_TTY=$(tty)
+# PATH exports
+export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+GPG_TTY="$(tty)"
+export GPG_TTY
 
 #export PYTHONSTARTUP=~/.pythonrc
 man() {
@@ -94,7 +97,7 @@ complete -C aws_completer aws n
 
 # completion ekctl
 if command -v eksctl @ > /dev/null >&1; then
-  . <(eksctl completion bash)
+  source <(eksctl completion bash)
 fi
 
 # completion brew
@@ -102,22 +105,22 @@ if command -v brew > /dev/null 2>&1; then
   brew_prefix="$(brew --prefix)"
   if [ -f "${brew_prefix}/etc/bash_completion" ]; then
     # shellcheck source=/dev/null
-    . "${brew_prefix}/etc/bash_completion"
+    source "${brew_prefix}/etc/bash_completion"
     for completion in "${brew_prefix}/etc/bash_completion"; do
       source "${completion}"
     done
   fi
 
-  if [ -d "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d" ]; then
+  if [ -f "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d" ]; then
     # shellcheck source=/dev/null
-    for completion in $(/usr/local/bin/brew --prefix)/etc/bash_completion.d/*; do
+    for completion in "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d/*"; do
       source "${completion}"
     done
   fi
 
   if [ -f "${brew_prefix}/Library/Contributions/brew_bash_completion.sh" ]; then
     # shellcheck source=/dev/null
-    . "${brew_prefix}/Library/Contributions/brew_bash_completion.sh"
+    source "${brew_prefix}/Library/Contributions/brew_bash_completion.sh"
   fi
 fi
 
@@ -183,19 +186,6 @@ function _go() {
   return 0
 }
 complete -F _go go
-
-# PATH exports
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
-export GOPATH=~/go
-export PATH=$PATH:$GOPATH/bin
-export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
-
-# nvm config
-#export NVM_DIR="$HOME/.nvm"
-# shellcheck source=/dev/null
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-# shellcheck source=/dev/null
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # added by travis gem
 # shellcheck source=/dev/null
@@ -266,6 +256,12 @@ cast() {
   fi
 }
 
+curl_status() {
+  if [ -n "${1}" ]; then
+    curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' "$1"
+  fi
+}
+
 gh-open() {
   file=${1:-""}
   git_branch=${2:-$(git symbolic-ref --quiet --short HEAD)}
@@ -279,8 +275,3 @@ if [ -f "${HOME}/google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/google-cloud
 
 # The next line enables shell command completion for gcloud.
 if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google-cloud-sdk/completion.bash.inc"; fi
-
-alias pip3="/usr/local/bin/pip3"
-alias python3="/usr/local/bin/python3"
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
