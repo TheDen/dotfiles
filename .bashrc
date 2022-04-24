@@ -26,7 +26,7 @@ alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Cres
 alias k='kubectl'
 alias kubectl="kcolor"
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
-alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
+alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi -f $(docker images --filter "dangling=true" -q --no-trunc)'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias kbuild="/opt/homebrew/bin/kustomize build"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
@@ -52,6 +52,7 @@ export PATH=$PATH:$GOPATH/bin
 export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
+export PATH="$PATH:/Users/den/.cargo/bin"
 GPG_TTY="$(tty)"
 export GPG_TTY
 
@@ -278,3 +279,9 @@ if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google
 
 # Private bashrc
 . ~/.bashrc_private
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi
