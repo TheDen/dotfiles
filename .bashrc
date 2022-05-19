@@ -41,7 +41,7 @@ alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias upgrade="ibrew upgrade && m1 brew upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias python3="/usr/local/bin/python3"
-
+alias htop="sudo htop"
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
