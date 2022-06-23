@@ -14,6 +14,7 @@ Plugin 'fatih/vim-go'
 call vundle#end()
 """ End Vundle
 
+colorscheme peachpuff
 filetype plugin indent on " Filetype auto-detection
 syntax on " Syntax highlighting
 set ttyfast " Fast terminal conn for faster redraw
