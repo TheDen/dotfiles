@@ -11,6 +11,7 @@ Plugin 'matze/vim-move'
 Plugin 'psf/black'
 Plugin 'z0mbix/vim-shfmt'
 Plugin 'fatih/vim-go'
+Plugin 'ntpeters/vim-better-whitespace'
 call vundle#end()
 """ End Vundle
 
