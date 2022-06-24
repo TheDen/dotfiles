@@ -1,13 +1,15 @@
 #!/bin/bash
 eval "$(/usr/local/bin/brew shellenv)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
+export TERM=screen-256color
 
 ## Prompt config
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 
 ## Aliases
 alias ..="cd .."
-alias vi="vim"
+alias vim="nvim"
+alias vi="nvim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -38,12 +40,13 @@ alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
-alias upgrade="ibrew upgrade && m1 brew upgrade"
+alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias python3="/usr/local/bin/python3"
 alias htop="sudo htop"
-export EDITOR=vim
-export VISUAL=vim
+alias awsp='aws-profile switch'
+export EDITOR=nvim
+export VISUAL=nvim
 export HOMEBREW_NO_ANALYTICS=1
 # PATH exports
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
