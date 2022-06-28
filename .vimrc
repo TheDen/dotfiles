@@ -12,10 +12,13 @@ Plugin 'psf/black'
 Plugin 'z0mbix/vim-shfmt'
 Plugin 'fatih/vim-go'
 Plugin 'ntpeters/vim-better-whitespace'
+Plugin 'vim-scripts/dante.vim'
 call vundle#end()
 """ End Vundle
 
-colorscheme peachpuff
+
+colorscheme dante
+
 filetype plugin indent on " Filetype auto-detection
 syntax on " Syntax highlighting
 set ttyfast " Fast terminal conn for faster redraw
@@ -90,12 +93,10 @@ let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
 set rtp+=$GOPATH/src/golang.org/x/lint/misc/vim
 
 "" map :Black
-nmap ,= :Black<CR>
 vmap ,= :Black<CR>
 
 let g:go_highlight_space_tab_error = 0
 let g:go_def_mode='gopls'
-let g:go_info_mode='gopls'
 
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
