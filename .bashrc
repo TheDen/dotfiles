@@ -8,8 +8,7 @@ PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 
 ## Aliases
 alias ..="cd .."
-alias vim="nvim"
-alias vi="nvim"
+alias vi="vim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -45,9 +44,10 @@ alias pip3="/usr/local/bin/pip3"
 alias python3="/usr/local/bin/python3"
 alias htop="sudo htop"
 alias awsp='aws-profile switch'
-export EDITOR=nvim
-export VISUAL=nvim
+export EDITOR=vim
+export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
+export KUBECTX_IGNORE_FZF=1
 # PATH exports
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
