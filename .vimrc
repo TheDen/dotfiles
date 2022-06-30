@@ -13,6 +13,7 @@ Plugin 'z0mbix/vim-shfmt'
 Plugin 'fatih/vim-go'
 Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'vim-scripts/dante.vim'
+Plugin 'gko/vim-coloresque'
 call vundle#end()
 """ End Vundle
 
