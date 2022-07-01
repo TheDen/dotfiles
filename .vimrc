@@ -103,6 +103,13 @@ let g:go_def_mode='gopls'
 let g:shfmt_extra_args = '-i 2 -ci -sr'
 let g:shfmt_fmt_on_save = 1
 
+
 " Toggle spell checking
 :set spelllang=en_au
 nnoremap <C-s> :set spell!<CR>
+
+" CTRL-X to Cut
+vnoremap <C-X> "+x
+
+" CTRL-C toc Copy
+vnoremap <C-C> "+y
