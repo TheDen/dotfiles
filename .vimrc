@@ -93,7 +93,7 @@ let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
 set rtp+=$GOPATH/src/golang.org/x/lint/misc/vim
 
 "" map :Black
-vmap ,= :Black<CR>
+map ,= :Black<CR>
 
 let g:go_highlight_space_tab_error = 0
 let g:go_def_mode='gopls'
