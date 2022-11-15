@@ -9,6 +9,7 @@ PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 ## Aliases
 alias ..="cd .."
 alias vi="vim"
+alias vim="/opt/homebrew/bin/vim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -41,7 +42,6 @@ alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
-alias python3="/usr/local/bin/python3"
 alias htop="sudo htop"
 alias awsp='aws-profile switch'
 export EDITOR=vim
@@ -59,7 +59,7 @@ export PATH="$PATH:/Users/den/.cargo/bin"
 GPG_TTY="$(tty)"
 export GPG_TTY
 
-#export PYTHONSTARTUP=~/.pythonrc
+export PYTHONSTARTUP=~/.pythonrc
 man() {
   env LESS_TERMCAP_mb=$'\E[01;31m' \
     LESS_TERMCAP_md=$'\E[01;38;5;74m' \
