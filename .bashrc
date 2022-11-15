@@ -274,6 +274,10 @@ gh-open() {
   open ${git_project_root}/tree/${git_branch}/${git_directory}${file}
 }
 
+vimperf() {
+  vim -u NONE "${@}"
+}
+
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f "${HOME}/google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/google-cloud-sdk/path.bash.inc"; fi
 
