@@ -53,11 +53,22 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
-export VOLTA_HOME="$HOME/.volta"
+export VOLTA_HOME="$iHOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="$PATH:/Users/den/.cargo/bin"
+export JAVA_HOME=/"$(/usr/libexec/java_home -v 1.8)"
+export PATH="/usr/local/opt/gettext/bin:$PATH:$HOME/.local/bin"
+export PATH="/usr/local/sbin:$PATH"
+export PATH=$PATH:~/.kube/plugins/jordanwilson230
+export PATH="/usr/local/opt/openssl/bin:$PATH"
+export GEM_HOME="$HOME/.gem"
+export PATH="$HOME/.gem/bin:$PATH"
+export PATH="/usr/local/opt/ruby/bin:$PATH"
 GPG_TTY="$(tty)"
 export GPG_TTY
+export GREP_COLOR='1;37;41'
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
 
 export PYTHONSTARTUP=~/.pythonrc
 man() {
@@ -105,27 +116,25 @@ if command -v eksctl @ > /dev/null >&1; then
 fi
 
 # completion brew
-if command -v brew > /dev/null 2>&1; then
-  brew_prefix="$(brew --prefix)"
-  if [ -f "${brew_prefix}/etc/bash_completion" ]; then
-    # shellcheck source=/dev/null
-    source "${brew_prefix}/etc/bash_completion"
-    for completion in "${brew_prefix}/etc/bash_completion"; do
-      source "${completion}"
+if type brew &> /dev/null; then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  else
+    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+      [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
     done
   fi
 
-  if [ -f "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d" ]; then
-    # shellcheck source=/dev/null
-    for completion in "$(/usr/local/bin/brew --prefix)/etc/bash_completion.d/*"; do
-      source "${completion}"
+  HOMEBREW_PREFIX="$(ibrew --prefix)"
+  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  else
+    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+      [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
     done
   fi
 
-  if [ -f "${brew_prefix}/Library/Contributions/brew_bash_completion.sh" ]; then
-    # shellcheck source=/dev/null
-    source "${brew_prefix}/Library/Contributions/brew_bash_completion.sh"
-  fi
 fi
 
 # completion helm
@@ -194,25 +203,13 @@ complete -F _go go
 # added by travis gem
 # shellcheck source=/dev/null
 [ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
-
 [ -f /usr/local/etc/profile.d/z.sh ] && . /usr/local/etc/profile.d/z.sh
 [ -f "${HOME}/.zrc" ] && . "${HOME}/.zrc"
 
 # Custom Functions
-namespace() {
-  if [ -z "$1" ]; then
-    :
-  else
-    kubectl config set-context "$(kubectl config current-context)" --namespace="${1}"
-  fi
-}
 
 calculate() {
   echo "$*" | bc -l
-}
-
-quick() {
-  tmux split-window -p 33 ${EDITOR} "$@" || exit
 }
 
 shellformat() {
@@ -222,7 +219,7 @@ shellformat() {
   fi
 }
 
-function pman() {
+pman() {
   if [ -d /Applications/Preview.app/ ]; then
     man -t "${1}" | open -f -a /Applications/Preview.app
   fi
@@ -254,12 +251,6 @@ webp_convert() {
   cwebp -q 100 "$file" -o "${file%.*}.webp"
 }
 
-cast() {
-  if [ -n "${1}" ]; then
-    youtube-dl -o - "${1}" | castnow --quiet
-  fi
-}
-
 curl_status() {
   if [ -n "${1}" ]; then
     curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' "$1"
@@ -279,16 +270,12 @@ vimperf() {
 }
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f "${HOME}/google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/google-cloud-sdk/path.bash.inc"; fi
+if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi &> /dev/null
 
 # The next line enables shell command completion for gcloud.
-if [ -f "${HOME}/google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/google-cloud-sdk/completion.bash.inc"; fi
+if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi &> /dev/null
+
+wait
 
 # Private bashrc
 . ~/.bashrc_private
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi
