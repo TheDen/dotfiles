@@ -39,6 +39,13 @@ nnoremap <C-y> :set invpaste paste?<CR>
 set pastetoggle=<C-y>
 set showmode
 
+""" Toggle syntax
+:map <C-b> :if exists("g:syntax_on") <Bar>
+      \   syntax off <Bar>
+      \ else <Bar>
+      \   syntax enable <Bar>
+      \ endif <CR>
+
 "" No noise
 set noerrorbells
 set novisualbell
@@ -102,12 +109,12 @@ let g:go_def_mode='gopls'
 let g:shfmt_extra_args = '-i 2 -ci -sr'
 let g:shfmt_fmt_on_save = 1
 
-" Toggle spell checking
+" Toggle spellcheck
 set spelllang=en_au
 nnoremap <C-s> :set spell!<CR>
 
-" CTRL-X to Cut
+" CTRL-X to cut
 vnoremap <C-X> "+x
 
-" CTRL-C toc Copy
+" CTRL-C to copy
 vnoremap <C-C> "+y
