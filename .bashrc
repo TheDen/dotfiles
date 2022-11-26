@@ -12,6 +12,7 @@ alias vi="vim"
 alias vim="/opt/homebrew/bin/vim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
+alias ccat="bat --style=plain"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
@@ -275,7 +276,9 @@ if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi &> /dev/null
 
-wait
+filepath() {
+  greadlink -f -- "$@"
+}
 
 # Private bashrc
 . ~/.bashrc_private
