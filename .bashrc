@@ -45,6 +45,8 @@ alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias htop="sudo htop"
 alias awsp='aws-profile switch'
+alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
+alias tmuxattach='tmux attach -t 0'
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
@@ -52,6 +54,7 @@ export KUBECTX_IGNORE_FZF=1
 # PATH exports
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
+export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOPATH/bin
 export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
 export VOLTA_HOME="$iHOME/.volta"
