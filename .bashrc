@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2155,SC1090,SC1091
 eval "$(/usr/local/bin/brew shellenv)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export TERM=screen-256color
@@ -18,7 +19,7 @@ alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
 alias gits='git status'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
-alias flushDNSMac="sudo killall -HUP mDNSResponder"
+alias flushDNSMac="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
 alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 alias sha256sum="shasum -a 256"
@@ -47,6 +48,7 @@ alias htop="sudo htop"
 alias awsp='aws-profile switch'
 alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
 alias tmuxattach='tmux attach -t 0'
+alias pbcopy='gcopy'
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
@@ -57,10 +59,11 @@ export GOPATH=~/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOPATH/bin
 export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
-export VOLTA_HOME="$iHOME/.volta"
+export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="$PATH:/Users/den/.cargo/bin"
-export JAVA_HOME=/"$(/usr/libexec/java_home -v 1.8)"
+JAVA_HOME=/"$(/usr/libexec/java_home -v 1.8)"
+export JAVA_HOME
 export PATH="/usr/local/opt/gettext/bin:$PATH:$HOME/.local/bin"
 export PATH="/usr/local/sbin:$PATH"
 export PATH=$PATH:~/.kube/plugins/jordanwilson230
@@ -73,30 +76,15 @@ export GPG_TTY
 export GREP_COLOR='1;37;41'
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
-
+# Manpage colours
+export LESS_TERMCAP_mb="$(printf "\e[1;31m")"
+export LESS_TERMCAP_md="$(printf "\e[1;31m")"
+export LESS_TERMCAP_me="$(printf "\e[0m")"
+export LESS_TERMCAP_se="$(printf "\e[0m")"
+export LESS_TERMCAP_so="$(printf "\e[1;44;33m")"
+export LESS_TERMCAP_ue="$(printf "\e[0m")"
+export LESS_TERMCAP_us="$(printf "\e[1;32m")"
 export PYTHONSTARTUP=~/.pythonrc
-man() {
-  env LESS_TERMCAP_mb=$'\E[01;31m' \
-    LESS_TERMCAP_md=$'\E[01;38;5;74m' \
-    LESS_TERMCAP_me=$'\E[0m' \
-    LESS_TERMCAP_se=$'\E[0m' \
-    LESS_TERMCAP_so=$'\E[38;5;246m' \
-    LESS_TERMCAP_ue=$'\E[0m' \
-    LESS_TERMCAP_us=$'\E[04;38;5;146m' \
-    man "$@"
-}
-
-man() {
-  env \
-    LESS_TERMCAP_mb="$(printf "\e[1;31m")" \
-    LESS_TERMCAP_md="$(printf "\e[1;31m")" \
-    LESS_TERMCAP_me="$(printf "\e[0m")" \
-    LESS_TERMCAP_se="$(printf "\e[0m")" \
-    LESS_TERMCAP_so="$(printf "\e[1;44;33m")" \
-    LESS_TERMCAP_ue="$(printf "\e[0m")" \
-    LESS_TERMCAP_us="$(printf "\e[1;32m")" \
-    man "$@"
-}
 
 ## History
 export HISTFILESIZE=
@@ -146,58 +134,21 @@ if command -v helm > /dev/null 2>&1; then
   eval "$(helm completion bash)"
 fi
 
-# completion ssh
-export COMP_WORDBREAKS=${COMP_WORDBREAKS/\:/}
-_sshcomplete() {
-  local CURRENT_PROMPT="${COMP_WORDS[COMP_CWORD]}"
-  if [[ ${CURRENT_PROMPT} == *@* ]]; then
-    local OPTIONS="-P ${CURRENT_PROMPT/@*/}@ -- ${CURRENT_PROMPT/*@/}"
-  else
-    local OPTIONS=" -- ${CURRENT_PROMPT}"
-  fi
-
-  # parse all defined hosts from .ssh/config
-  if [ -r "$HOME/.ssh/config" ]; then
-    COMPREPLY=($(compgen -W "$(grep ^Host "$HOME/.ssh/config" | awk '{for (i=2; i<=NF; i++) print $i}')" ${OPTIONS}))
-  fi
-
-  # parse all hosts found in .ssh/known_hosts
-  if [ -r "$HOME/.ssh/known_hosts" ]; then
-    if grep -v -q -e '^ ssh-rsa' "$HOME/.ssh/known_hosts"; then
-      COMPREPLY=(${COMPREPLY[@]} $(compgen -W "$(awk '{print $1}' "$HOME/.ssh/known_hosts" | grep -v ^\| | cut -d, -f 1 | sed -e 's/\[//g' | sed -e 's/\]//g' | cut -d: -f1 | grep -v ssh-rsa)" ${OPTIONS}))
-    fi
-  fi
-
-  # parse hosts defined in /etc/hosts
-  if [ -r /etc/hosts ]; then
-    COMPREPLY=(${COMPREPLY[@]} $(compgen -W "$(grep -v '^[[:space:]]*$' /etc/hosts | grep -v '^#' | awk '{for (i=2; i<=NF; i++) print $i}')" ${OPTIONS}))
-  fi
-
-  return 0
-}
-complete -o default -o nospace -F _sshcomplete ssh
-
-# completion pip
-_pip_completion() {
-  COMPREPLY=($(COMP_WORDS="${COMP_WORDS[*]}" \
-    COMP_CWORD=$COMP_CWORD \
-    PIP_AUTO_COMPLETE=1 $1))
-}
-complete -o default -F _pip_completion pip
-
 # completion go
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   case "${COMP_WORDS[COMP_CWORD - 1]}" in
     "go")
       comms="build clean doc env fix fmt get install list run test tool version vet"
-      COMPREPLY=($(compgen -W "${comms}" -- ${cur}))
+      # shellcheck disable=SC2207
+      COMPREPLY=($(compgen -W "${comms}" -- "${cur}"))
       ;;
     *)
       files="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type f -iname "*.go" -exec basename {} \;)"
       dirs="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
       repl="${files} ${dirs}"
-      COMPREPLY=($(compgen -W "${repl}" -- ${cur}))
+      # shellcheck disable=SC2207
+      COMPREPLY=($(compgen -W "${repl}" -- "${cur}"))
       ;;
   esac
   return 0
@@ -266,7 +217,7 @@ gh-open() {
   git_branch=${2:-$(git symbolic-ref --quiet --short HEAD)}
   git_project_root=$(git config remote.origin.url | sed "s~git@\(.*\):\(.*\)~https://\1/\2~" | sed "s~\(.*\).git\$~\1~")
   git_directory=$(git rev-parse --show-prefix)
-  open ${git_project_root}/tree/${git_branch}/${git_directory}${file}
+  open "${git_project_root}"/tree/"${git_branch}"/"${git_directory}""${file}"
 }
 
 vimperf() {
