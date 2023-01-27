@@ -63,7 +63,7 @@ window:
   startup_mode: Windowed
 
   # Window title
-  #title: Alacritty
+  title: Alacritty
 
   # Window class (Linux only):
   #class: Alacritty
