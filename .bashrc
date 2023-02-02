@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2155,SC1090,SC1091
-eval "$(/usr/local/bin/brew shellenv)"
+#eval "$(/usr/local/bin/brew shellenv)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export TERM=screen-256color
 
@@ -64,8 +64,8 @@ export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="$PATH:/Users/den/.cargo/bin"
-JAVA_HOME=/"$(/usr/libexec/java_home -v 1.8)"
-export JAVA_HOME
+# use "$(/usr/libexec/java_home -v 1.8)" to get JAVA_HOME
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home"
 export PATH="/usr/local/opt/gettext/bin:$PATH:$HOME/.local/bin"
 export PATH="/usr/local/sbin:$PATH"
 export PATH=$PATH:~/.kube/plugins/jordanwilson230
@@ -111,7 +111,7 @@ fi
 
 # completion brew
 if type brew &> /dev/null; then
-  HOMEBREW_PREFIX="$(brew --prefix)"
+  HOMEBREW_PREFIX="/opt/homebrew"
   if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
     source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
   else
@@ -120,7 +120,7 @@ if type brew &> /dev/null; then
     done
   fi
 
-  HOMEBREW_PREFIX="$(ibrew --prefix)"
+  HOMEBREW_PREFIX="/usr/local"
   if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
     source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
   else
@@ -131,8 +131,8 @@ if type brew &> /dev/null; then
 fi
 
 # completion helm
-if command -v helm > /dev/null 2>&1; then
-  eval "$(helm completion bash)"
+if type helm &> /dev/null; then
+  source <(helm completion bash)
 fi
 
 # completion go
