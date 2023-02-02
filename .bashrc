@@ -43,6 +43,7 @@ alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
+alias brewcleanup='brew cleanup --prune=all -s && ibrew cleanup --prune=all -s'
 alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias htop="sudo htop"
@@ -162,78 +163,11 @@ complete -F _go go
 [ -f /usr/local/etc/profile.d/z.sh ] && . /usr/local/etc/profile.d/z.sh
 [ -f "${HOME}/.zrc" ] && . "${HOME}/.zrc"
 
-# Custom Functions
-
-calculate() {
-  echo "$*" | bc -l
-}
-
-shellformat() {
-  local dir="${1}"
-  if command -v shfmt > /dev/null 2>&1; then
-    shfmt -i 2 -ci -sr -w "${dir:=.}"
-  fi
-}
-
-pman() {
-  if [ -d /Applications/Preview.app/ ]; then
-    man -t "${1}" | open -f -a /Applications/Preview.app
-  fi
-}
-
-markdown_spellcheck() {
-  if [ -n "${1}" ]; then
-    local checkFiles="${1}"
-  else
-    local checkFiles="**/*.md"
-  fi
-  if command -v mdspell > /dev/null 2>&1; then
-    mdspell --en-au --ignore-numbers -r "${checkFiles}"
-  fi
-}
-
-2qr() {
-  qrencode "$1" -t ANSI256 -o -
-}
-
-dockerfile_format() {
-  if command -v dockerfile-utils > /dev/null 2>&1; then
-    dockerfile-utils format --spaces 4 "$1"
-  fi
-}
-
-webp_convert() {
-  local file="$1"
-  cwebp -q 100 "$file" -o "${file%.*}.webp"
-}
-
-curl_status() {
-  if [ -n "${1}" ]; then
-    curl -L -o /dev/null --silent --head --write-out '%{http_code}\n' "$1"
-  fi
-}
-
-gh-open() {
-  file=${1:-""}
-  git_branch=${2:-$(git symbolic-ref --quiet --short HEAD)}
-  git_project_root=$(git config remote.origin.url | sed "s~git@\(.*\):\(.*\)~https://\1/\2~" | sed "s~\(.*\).git\$~\1~")
-  git_directory=$(git rev-parse --show-prefix)
-  open "${git_project_root}"/tree/"${git_branch}"/"${git_directory}""${file}"
-}
-
-vimperf() {
-  vim -u NONE "${@}"
-}
-
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi &> /dev/null
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi &> /dev/null
-
-filepath() {
-  greadlink -f -- "$@"
-}
 
 # Private bashrc
 . ~/.bashrc_private
