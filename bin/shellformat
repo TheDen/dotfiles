@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -euo pipefail
+
+dir="${1}"
+if command -v shfmt > /dev/null 2>&1; then
+  shfmt -i 2 -ci -sr -w "${dir:=.}"
+fi

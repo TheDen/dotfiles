@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -euo pipefail
+
+file="$1"
+cwebp -q 100 "$file" -o "${file%.*}.webp"

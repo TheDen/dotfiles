@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [ -n "${1}" ]; then
+  checkFiles="${1}"
+else
+  checkFiles="**/*.md"
+fi
+if command -v mdspell > /dev/null 2>&1; then
+  mdspell --en-au --ignore-numbers -r "${checkFiles}"
+fi
