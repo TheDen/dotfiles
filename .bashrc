@@ -128,7 +128,6 @@ if type brew &> /dev/null; then
       [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
     done
   fi
-
 fi
 
 # completion helm
@@ -157,15 +156,8 @@ function _go() {
 }
 complete -F _go go
 
-# added by travis gem
-# shellcheck source=/dev/null
-[ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
-[ -f /usr/local/etc/profile.d/z.sh ] && . /usr/local/etc/profile.d/z.sh
-[ -f "${HOME}/.zrc" ] && . "${HOME}/.zrc"
-
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi &> /dev/null
-
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi &> /dev/null
 
