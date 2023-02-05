@@ -156,6 +156,8 @@ function _go() {
 }
 complete -F _go go
 
+complete -C /opt/homebrew/Cellar/tfenv/3.0.0/versions/1.2.9/terraform terraform
+
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi &> /dev/null
 # The next line enables shell command completion for gcloud.
