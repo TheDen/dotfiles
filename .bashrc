@@ -48,12 +48,15 @@ alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias htop="sudo htop"
 alias awsp='aws-profile switch'
+alias awspl='aws configure list-profiles'
 alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
 alias tmuxattach='tmux attach -t 0'
 alias pbcopy='gcopy'
 export EDITOR=vim
 export VISUAL=vim
 export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_NO_INSECURE_REDIRECT=1
+export HOMEBREW_CASK_OPTS=--require-sha
 export KUBECTX_IGNORE_FZF=1
 # PATH exports
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
@@ -97,9 +100,10 @@ export HISTFILE=~/.bash_eternal_history
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
 ## Completions
+source <(kubectl completion bash)
 complete -cf sudo
 complete -cf man
-complete -o default -F __start_kubectl k
+complete -o nospace -F __start_kubectl k
 complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
 complete -C aws_completer aws n
