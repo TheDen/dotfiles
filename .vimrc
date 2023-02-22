@@ -34,6 +34,10 @@ set autoread " Read when file is modified externally
 
 set laststatus=2 " Always show the status line
 
+"" Show full path of current file
+set statusline+=%F
+
+
 """ Toggle paste/nopaste
 nnoremap <C-y> :set invpaste paste?<CR>
 set pastetoggle=<C-y>
