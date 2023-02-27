@@ -21,7 +21,6 @@ alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)")
 alias gits='git status'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
 alias flushDNSMac="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
-alias docker-dev='make -f ~/repo/docker-dev-env/Makefile'
 alias yamlvalidate="ruby -e \"require 'yaml';puts YAML.load_file(ARGV[0])\""
 alias sha256sum="shasum -a 256"
 alias sha512sum="shasum -a 512"
@@ -32,6 +31,7 @@ alias k='kubectl'
 alias kubectl="kcolor"
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
 alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi -f $(docker images --filter "dangling=true" -q --no-trunc)'
+alias dockerimages='docker images --format "{{.ID}}\t{{.Size}}\t{{.Repository}}" | sort -k 2 -h'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias kbuild="/opt/homebrew/bin/kustomize build"
 alias autoscalerstatus="kubectl describe -n kube-system configmap cluster-autoscaler-status"
