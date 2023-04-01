@@ -14,13 +14,14 @@ Plugin 'fatih/vim-go'
 Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'vim-scripts/dante.vim'
 Plugin 'gko/vim-coloresque'
+Plugin 'vitalk/vim-shebang'
 call vundle#end()
 """ End Vundle
 
 colorscheme dante
 
-filetype plugin indent on " Filetype auto-detection
 syntax on " Syntax highlighting
+filetype plugin indent on " Filetype auto-detection
 set ttyfast " Fast terminal conn for faster redraw
 set autoindent " Turn on autoident
 set hlsearch " Highlight searches
@@ -73,7 +74,7 @@ set incsearch " Show matches while typing
 set history=10000
 set undofile
 set undodir=~/vim_backup
-set undoreload=100000
+set undoreload=1000000
 
 set tabstop=2
 set shiftwidth=2
@@ -87,6 +88,9 @@ au BufReadPost Jenkinsfile set syntax=groovy
 au BufReadPost Jenkinsfile set filetype=groovy
 
 autocmd BufNewFile,BufRead Dockerfile* setfiletype Dockerfile
+
+AddShebangPattern! zsh ^#!.*/bin/bash
+au BufReadPost *.sh set syntax=zsh
 
 " Highlight trailing whitespaces
 highlight ExtraWhitespace ctermbg=red guibg=red
@@ -122,3 +126,9 @@ vnoremap <C-X> "+x
 
 " CTRL-C to copy
 vnoremap <C-C> "+y
+
+" disable mouse
+set mouse=
+
+" Toggle vertical cursorline
+map <C-Bslash> :set cursorcolumn!<Bar>set cursorline!<CR>
