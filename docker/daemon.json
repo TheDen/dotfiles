@@ -1,0 +1,14 @@
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "50GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "features": {
+    "buildkit": true
+  },
+  "max-concurrent-downloads": 10,
+  "max-concurrent-uploads": 10
+}
