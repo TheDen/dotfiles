@@ -10,8 +10,8 @@ PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 ## Aliases
 alias ..="cd .."
 alias grepc="grep --color=always"
-alias vi="vim"
-alias vim="/opt/homebrew/bin/vim"
+alias vi="nvim"
+alias vim="/opt/homebrew/bin/nvim"
 alias ll="ls -alF"
 alias xemacs="/Applications/Emacs.app/Contents/MacOS/Emacs"
 alias ccat="bat --style=plain"
@@ -170,3 +170,9 @@ if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Use
 
 # Private bashrc
 . ~/.bashrc_private
+
+source /Users/den/.bash_completions/netcheck.sh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
