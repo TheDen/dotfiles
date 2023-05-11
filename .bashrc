@@ -51,6 +51,7 @@ alias awsp='aws-profile switch'
 alias awspl='aws configure list-profiles'
 alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
 alias tmuxattach='tmux attach -t 0'
+alias go-projects="cd ${GOPATH}/src/github.com/TheDen/"
 alias pbcopy='gcopy'
 export EDITOR=vim
 export VISUAL=vim
