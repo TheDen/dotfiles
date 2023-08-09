@@ -10,6 +10,7 @@ PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
 ## Aliases
 alias ..="cd .."
 alias grepc="grep --color=always"
+alias bat='bat -p'
 alias vi="nvim"
 alias vim="/opt/homebrew/bin/nvim"
 alias ll="ls -alF"
