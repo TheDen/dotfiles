@@ -19,6 +19,7 @@ alias ccat="bat --style=plain"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias be="bundle exec"
 alias gitroot='cd $(git rev-parse --show-toplevel 2> /dev/null || echo "$(pwd)") && echo "$_"'
+alias gh-open='gh browse'
 alias gits='git status'
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
 alias flushDNSMac="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
