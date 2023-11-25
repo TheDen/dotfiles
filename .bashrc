@@ -32,7 +32,7 @@ alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Cres
 alias k='kubectl'
 alias kubectl="kcolor"
 alias clustermem='cluster-resource-explorer -namespace="" -reverse -sort MemReq'
-alias docker-clean='docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi -f $(docker images --filter "dangling=true" -q --no-trunc)'
+alias docker-clean='docker system prune --volumes -f && docker ps -aq | xargs -P $(nproc) -n1 docker rm -f ; docker rmi -f $(docker images --filter "dangling=true" -q --no-trunc)'
 alias dockerimages='docker images --format "{{.ID}}\t{{.Size}}\t{{.Repository}}" | sort -k 2 -h'
 alias gl="git log --all --decorate --oneline --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias kbuild="/opt/homebrew/bin/kustomize build"
