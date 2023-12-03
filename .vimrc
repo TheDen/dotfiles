@@ -115,7 +115,7 @@ let g:go_def_mode='gopls'
 
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
-let g:shfmt_fmt_on_save = 1
+"let g:shfmt_fmt_on_save = 1
 
 " Toggle spellcheck
 set spelllang=en_au
@@ -132,3 +132,10 @@ set mouse=
 
 " Toggle vertical cursorline
 map <C-Bslash> :set cursorcolumn!<Bar>set cursorline!<CR>
+
+" Golines
+let g:go_fmt_command = "golines"
+let g:go_fmt_options = {
+    \ 'golines': '-m 100',
+    \ }
+

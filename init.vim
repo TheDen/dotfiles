@@ -12,6 +12,10 @@ Plug 'ntpeters/vim-better-whitespace'
 Plug 'vim-scripts/dante.vim'
 Plug 'gko/vim-coloresque'
 Plug 'vitalk/vim-shebang'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'cuducos/yaml.nvim'
 call plug#end()
 
 colorscheme dante
@@ -130,3 +134,10 @@ set mouse=
 
 " Toggle vertical cursorline
 map <C-Bslash> :set cursorcolumn!<Bar>set cursorline!<CR>
+
+" Golines
+let g:go_fmt_command = "golines"
+let g:go_fmt_options = {
+    \ 'golines': '-m 100',
+    \ }
+
