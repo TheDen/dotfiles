@@ -46,7 +46,7 @@ alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias brewcleanup='brew cleanup --prune=all -s && ibrew cleanup --prune=all -s'
-alias upgrade="ibrew upgrade && m1 brew upgrade && mas upgrade"
+alias upgrade="ibrew upgrade -g && m1 brew upgrade -g && mas upgrade"
 alias pip3="/usr/local/bin/pip3"
 alias htop="sudo htop"
 alias awsp='aws-profile switch'
