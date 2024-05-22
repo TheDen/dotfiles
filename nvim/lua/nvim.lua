@@ -9,5 +9,18 @@ function toggle_copilot()
   end
 end
 
-vim.g.copilot_enabled = false
+vim.g.copilot_enabled = true
 vim.api.nvim_set_keymap('n', 'c', ':lua toggle_copilot()<CR>', { noremap = true, silent = false })
+
+on_attach = function(client)
+    apply_settings()
+    lsp_status.on_attach(client)
+    vim.api.nvim_buf_set_keymap(0, 'n', 'gs', '<Cmd>ClangdSwitchSourceHeader<CR>', {noremap=true, silent=true})
+end
+
+require("bat").setup {
+    background = {
+    light = "latte",
+    dark = "mocha"
+  }
+}

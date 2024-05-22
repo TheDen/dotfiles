@@ -16,11 +16,12 @@ Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'cuducos/yaml.nvim'
+Plug 'ibhagwan/fzf-lua'
 call plug#end()
 
 colorscheme dante
-
-lua require('nvim')
+set background=dark
+set termguicolors&
 
 syntax on " Syntax highlighting
 filetype plugin indent on " Filetype auto-detection
@@ -114,6 +115,8 @@ map ,= :Black<CR>
 
 let g:go_highlight_space_tab_error = 0
 let g:go_def_mode='gopls'
+let g:go_info_mode='gopls'
+
 
 " shfmt configuration
 let g:shfmt_extra_args = '-i 2 -ci -sr'
@@ -141,3 +144,10 @@ let g:go_fmt_options = {
     \ 'golines': '-m 100',
     \ }
 
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+hi clear CursorLine
+hi CursorLine gui=underline cterm=underline
