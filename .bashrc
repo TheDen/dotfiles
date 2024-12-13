@@ -94,6 +94,7 @@ export LESS_TERMCAP_ue="$(printf "\e[0m")"
 export LESS_TERMCAP_us="$(printf "\e[1;32m")"
 export PYTHONSTARTUP=~/.pythonrc
 alias dusort='du -h -d1 * | sort -h'
+alias smart_disk_usage='smartctl -a /dev/disk0 | awk -F ":" "/Percentage Used:/{gsub(/ /, \"\", \$2); print \$2}"'
 
 ## History
 export HISTFILESIZE=
