@@ -55,8 +55,8 @@ alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
 alias tmuxattach='tmux attach -t 0'
 alias go-projects="cd ${GOPATH}/src/github.com/TheDen/"
 alias pbcopy='gcopy'
-export EDITOR=vim
-export VISUAL=vim
+export EDITOR=nvim
+export VISUAL=nvim
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_INSECURE_REDIRECT=1
 export HOMEBREW_CASK_OPTS=--require-sha
@@ -66,13 +66,13 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 export GOPATH=~/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOPATH/bin
-export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
+export PATH="$PATH:$HOME/Library/Python/3.9/bin/"
 #export VOLTA_HOME="$HOME/.volta"
 #export PATH="$VOLTA_HOME/bin:$PATH"
-export PATH="$PATH:/Users/den/.cargo/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
 # use "$(/usr/libexec/java_home -v 1.8)" to get JAVA_HOME
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home"
-export PATH="/usr/local/opt/gettext/bin:$PATH:$HOME/.local/bin"
+export PATH="/usr/local/opt/gettext/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH=$PATH:~/.kube/plugins/jordanwilson230
 export PATH="/usr/local/opt/openssl/bin:$PATH"
@@ -98,6 +98,7 @@ alias smart_disk_usage='smartctl -a /dev/disk0 | awk -F ":" "/Percentage Used:/{
 export DO_NOT_TRACK=true
 
 ## History
+shopt -s histappend
 export HISTFILESIZE=
 export HISTSIZE=
 # Change the file location because certain bash sessions truncate .bash_history file upon close.
@@ -112,10 +113,10 @@ complete -cf man
 complete -o nospace -F __start_kubectl k
 complete -F _kube_contexts kcontext
 complete -F _kube_namespaces knamespace
-complete -C aws_completer aws n
+complete -C aws_completer aws
 
 # completion ekctl
-if command -v eksctl @ > /dev/null >&1; then
+if command -v eksctl > /dev/null 2>&1; then
   source <(eksctl completion bash)
 fi
 
@@ -166,17 +167,19 @@ function _go() {
 }
 complete -F _go go
 
-complete -C /opt/homebrew/Cellar/tfenv/3.0.0/versions/1.2.9/terraform terraform
+if command -v terraform > /dev/null 2>&1; then
+  complete -C "$(command -v terraform)" terraform
+fi
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/den/gcloud/google-cloud-sdk/path.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/path.bash.inc'; fi &> /dev/null
+if [ -f "$HOME/gcloud/google-cloud-sdk/path.bash.inc" ]; then . "$HOME/gcloud/google-cloud-sdk/path.bash.inc"; fi &> /dev/null
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/den/gcloud/google-cloud-sdk/completion.bash.inc'; fi &> /dev/null
+if [ -f "$HOME/gcloud/google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/gcloud/google-cloud-sdk/completion.bash.inc"; fi &> /dev/null
 
 # Private bashrc
 . ~/.bashrc_private
 
-source /Users/den/.bash_completions/netcheck.sh
+source "$HOME/.bash_completions/netcheck.sh"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
