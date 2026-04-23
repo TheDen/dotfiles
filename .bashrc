@@ -67,8 +67,8 @@ export GOPATH=~/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOPATH/bin
 export PATH="$PATH:/Users/den/Library/Python/3.9/bin/"
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
+#export VOLTA_HOME="$HOME/.volta"
+#export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="$PATH:/Users/den/.cargo/bin"
 # use "$(/usr/libexec/java_home -v 1.8)" to get JAVA_HOME
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home"
@@ -95,6 +95,7 @@ export LESS_TERMCAP_us="$(printf "\e[1;32m")"
 export PYTHONSTARTUP=~/.pythonrc
 alias dusort='du -h -d1 * | sort -h'
 alias smart_disk_usage='smartctl -a /dev/disk0 | awk -F ":" "/Percentage Used:/{gsub(/ /, \"\", \$2); print \$2}"'
+export DO_NOT_TRACK=true
 
 ## History
 export HISTFILESIZE=
