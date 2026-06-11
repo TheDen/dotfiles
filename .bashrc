@@ -144,7 +144,7 @@ alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias brewcleanup='brew cleanup --prune=all -s && ibrew cleanup --prune=all -s'
-alias upgrade='(ibrew upgrade -g -y && m1 brew upgrade -g -y); mas upgrade'
+alias upgrade='(ibrew upgrade -g && m1 brew upgrade -g -y); mas upgrade'
 
 ## Aliases: tmux and projects
 alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
