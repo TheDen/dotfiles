@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+# Renders the right-hand tmux status segments in a single process.
+#
+# tmux forks a shell per #() every status-interval, so at 1s ticks the shell
+# startups dominate. Doing everything here costs one startup instead of seven.
+# Slow-but-rarely-changing values are cached; a cache hit uses only builtins,
+# so a typical tick forks nothing at all.
+#
+# Usage: tmux-status <pane_current_path>
+
+path=${1:-$PWD}
+cache_dir=${TMPDIR:-/tmp}
+
+# --- cache ------------------------------------------------------------------
+# File layout: line 1 = epoch seconds, line 2 = value. Read with builtins.
+CACHED=
+
+cache_get() { # <ttl> <key>; returns 0 on a fresh hit
+  local f=$cache_dir/tmux-status-$2 ts=0
+  CACHED=
+  [[ -r $f ]] || return 1
+  { read -r ts; IFS= read -r CACHED; } <"$f" 2>/dev/null
+  [[ $ts == +([0-9]) ]] || return 1
+  ((EPOCHSECONDS - ts < $1))
+}
+
+cache_put() { # values are single-line by contract; flatten defensively
+  printf '%s\n%s\n' "$EPOCHSECONDS" "${2//$'\n'/ }" >"$cache_dir/tmux-status-$1"
+}
+
+cached() { # <ttl> <key> <command...>
+  if cache_get "$1" "$2"; then
+    printf '%s' "$CACHED"
+    return
+  fi
+  local ttl=$1 key=$2
+  shift 2
+  local out
+  out=$("$@" 2>/dev/null)
+  cache_put "$key" "$out"
+  printf '%s' "$out"
+}
+
+# --- segment producers ------------------------------------------------------
+
+# Read .git/HEAD directly: forking git costs ~15ms, this costs nothing.
+# Falls back to git for worktrees/submodules (.git as a file) and detached HEAD.
+git_branch() {
+  local d=$path head
+  while [[ -n $d && $d != / ]]; do
+    if [[ -d $d/.git ]]; then
+      [[ -r $d/.git/HEAD ]] || return
+      read -r head <"$d/.git/HEAD" 2>/dev/null || return
+      if [[ $head == ref:*refs/heads/* ]]; then
+        printf '%s' "${head##*refs/heads/}"
+      else
+        printf '%s' "${head:0:7}"
+      fi
+      return
+    elif [[ -f $d/.git ]]; then
+      git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null
+      return
+    fi
+    d=${d%/*}
+  done
+}
+
+# Each of these reduces to a single value *before* caching: the cache holds one
+# line, so caching raw multi-line output (df, notably) would truncate it.
+_aws() { aws-profile whoami 2>/dev/null | awk '{if (/>/) print $2}'; }
+aws_profile() { cached 30 aws _aws; }
+
+_kube() {
+  kubectl config view --minify \
+    --output 'jsonpath={..contexts[0].context.cluster}' 2>/dev/null |
+    sed -E 's/.*\([0-9]{10}\)://'
+}
+kube_cluster() { cached 30 kube _kube; }
+
+# -H is base 10, matching the free space macOS itself reports (-h is base 2).
+_disk() { df -H / 2>/dev/null | awk 'NR==2 {print $4}'; }
+disk_free() { cached 10 disk _disk; }
+
+lan_ip() { cached 30 ip ipconfig getifaddr en0; }
+
+# tmux-mem-cpu-load samples over >=1s, so it cannot be called inline without
+# stalling every tick. Serve the last value and refresh out of band. The
+# timestamp is bumped first so concurrent ticks don't each spawn a refresh;
+# the child's stdout goes to /dev/null so tmux doesn't wait on it.
+mem_cpu() {
+  if ! cache_get 10 memcpu; then
+    cache_put memcpu "$CACHED"
+    (
+      v=$(tmux-mem-cpu-load --interval 1 -m 0 -a 0 -g 0 2>/dev/null)
+      [[ -n $v ]] && cache_put memcpu "$v"
+    ) >/dev/null 2>&1 &
+  fi
+  printf '%s' "$CACHED"
+}
+
+# --- battery ----------------------------------------------------------------
+# One pmset call yields percentage, state and time, replacing the tmux-battery
+# plugin (which re-ran pmset through several nested scripts, ~140ms a tick).
+BATT_PCT= BATT_TIME= BATT_BG=
+battery() {
+  local line pct
+  if cache_get 10 batt; then
+    line=$CACHED
+  else
+    line=$(pmset -g batt 2>/dev/null | tail -1)
+    cache_put batt "$line"
+  fi
+  [[ -n $line ]] || return
+
+  [[ $line =~ ([0-9]+)% ]] && pct=${BASH_REMATCH[1]}
+  [[ -z $pct ]] && return
+  BATT_PCT=$pct%
+
+  # Only show a time when there is a real estimate.
+  if [[ $line =~ ([0-9]+:[0-9]{2}) && ${BASH_REMATCH[1]} != 0:00 ]]; then
+    BATT_TIME=${BASH_REMATCH[1]}
+  fi
+
+  # Substring match, not field splitting: pmset's spacing varies.
+  # "discharging" must be tested first, since it contains "charging".
+  if [[ $line == *discharging* ]]; then
+    # Same 8-tier gradient the tmux-battery plugin used.
+    local tiers=('#ff0000' '#ff4000' '#ff8000' '#ffc000' '#ffff00' '#aaff00' '#55ff00' '#00ff00')
+    local i=$((pct * 8 / 100))
+    ((i > 7)) && i=7
+    BATT_BG=${tiers[i]}
+  else
+    BATT_BG=colour33
+  fi
+}
+
+# --- render -----------------------------------------------------------------
+# Emit "#[style] value " only when the value is non-empty, so an inactive
+# segment leaves no coloured gap.
+seg() { [[ -n $2 ]] && printf '#[%s] %s ' "$1" "$2"; }
+
+seg 'fg=white,bg=darkred'  "$(git_branch)"
+seg 'fg=black,bg=green'    "$(aws_profile)"
+seg 'fg=black,bg=darkorange' "$(kube_cluster)"
+seg 'fg=black,bg=magenta'  "$(mem_cpu)"
+seg 'fg=black,bg=cyan'     "$(disk_free)"
+seg 'fg=black,bg=pink'     "$(lan_ip)"
+
+battery
+[[ -n $BATT_PCT ]] && printf '#[fg=colour0,bg=%s] %s%s ' \
+  "$BATT_BG" "$BATT_PCT" "${BATT_TIME:+ $BATT_TIME}"
+printf '\n'
