@@ -205,6 +205,11 @@ if command_exists helm; then
   source <(helm completion bash)
 fi
 
+# completion lima
+if command_exists limactl; then
+  source <(limactl completion bash)
+fi
+
 # completion go
 function _go() {
   cur="${COMP_WORDS[COMP_CWORD]}"
