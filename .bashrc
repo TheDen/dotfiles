@@ -30,10 +30,22 @@ path_append() {
   esac
 }
 
+## Homebrew
+# Static equivalent of `eval "$(brew shellenv)"`, which forks brew (~35ms).
 if [[ -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+  export HOMEBREW_PREFIX=/opt/homebrew
 elif [[ -x /usr/local/bin/brew ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
+  export HOMEBREW_PREFIX=/usr/local
+fi
+if [[ -n ${HOMEBREW_PREFIX} ]]; then
+  export HOMEBREW_CELLAR="${HOMEBREW_PREFIX}/Cellar"
+  export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}"
+  path_prepend "${HOMEBREW_PREFIX}/sbin"
+  path_prepend "${HOMEBREW_PREFIX}/bin"
+  case ":${INFOPATH}:" in
+    *":${HOMEBREW_PREFIX}/share/info:"*) ;;
+    *) export INFOPATH="${HOMEBREW_PREFIX}/share/info${INFOPATH:+:${INFOPATH}}" ;;
+  esac
 fi
 
 export TERM=screen-256color
@@ -75,14 +87,14 @@ export GPG_TTY
 export GREP_COLOR='1;37;41'
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
-# Manpage colours
-LESS_TERMCAP_mb="$(printf "\e[1;31m")"
-LESS_TERMCAP_md="$(printf "\e[1;31m")"
-LESS_TERMCAP_me="$(printf "\e[0m")"
-LESS_TERMCAP_se="$(printf "\e[0m")"
-LESS_TERMCAP_so="$(printf "\e[1;44;33m")"
-LESS_TERMCAP_ue="$(printf "\e[0m")"
-LESS_TERMCAP_us="$(printf "\e[1;32m")"
+# Manpage colours ($'...' avoids a subshell per variable)
+LESS_TERMCAP_mb=$'\e[1;31m'
+LESS_TERMCAP_md=$'\e[1;31m'
+LESS_TERMCAP_me=$'\e[0m'
+LESS_TERMCAP_se=$'\e[0m'
+LESS_TERMCAP_so=$'\e[1;44;33m'
+LESS_TERMCAP_ue=$'\e[0m'
+LESS_TERMCAP_us=$'\e[1;32m'
 export LESS_TERMCAP_mb LESS_TERMCAP_md LESS_TERMCAP_me LESS_TERMCAP_se
 export LESS_TERMCAP_so LESS_TERMCAP_ue LESS_TERMCAP_us
 export PYTHONSTARTUP=~/.pythonrc
@@ -144,7 +156,7 @@ alias m1="arch -arm64"
 alias x86="arch -x86_64"
 alias ibrew='arch -x86_64 /usr/local/bin/brew'
 alias brewcleanup='brew cleanup --prune=all -s && ibrew cleanup --prune=all -s'
-alias upgrade='(ibrew upgrade -g && m1 brew upgrade -g -y); mas upgrade'
+alias upgrade='(brew upgrade -g -y; mas upgrade)' '(ibrew upgrade -g && m1 brew upgrade -g -y); mas upgrade'
 
 ## Aliases: tmux and projects
 alias tmuxlog='tmux capture-pane -pS N > ~/tmuxlog.txt'
@@ -166,89 +178,138 @@ case ";${PROMPT_COMMAND};" in
   *) PROMPT_COMMAND="history -a${PROMPT_COMMAND:+; $PROMPT_COMMAND}" ;;
 esac
 
+## Google Cloud SDK PATH
+# Inlined from google-cloud-sdk/path.bash.inc, which is all that file does.
+path_prepend "$HOME/gcloud/google-cloud-sdk/bin"
+
 ## Completions
-complete -cf sudo
-complete -cf man
-if type -P kubectl > /dev/null; then
-  source <(command kubectl completion bash)
-  complete -o nospace -F __start_kubectl k
-fi
-if command_exists aws_completer; then
-  complete -C aws_completer aws
-fi
+# Loading completions eagerly costs ~800ms per shell: bash-completion 1.x
+# sources all ~300 of its scripts up front, and every `<tool> completion bash`
+# is a fork. Instead everything below is deferred to the first TAB press, via
+# the "default" completion hook that bash consults for commands with no
+# completion of their own. Returning 124 from that hook tells bash to retry the
+# completion once the real definitions are in place, so the first TAB still
+# completes correctly -- it just costs the load.
 
-# completion ekctl
-if command_exists eksctl; then
-  source <(eksctl completion bash)
-fi
-
-# completion brew
-for HOMEBREW_PREFIX in /opt/homebrew /usr/local; do
-  [[ -d "${HOMEBREW_PREFIX}" ]] || continue
-  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
-    source_if_readable "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
-  else
-    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
-      source_if_readable "${COMPLETION}"
-    done
+# Cache `<tool> completion bash` output, regenerating only when the tool binary
+# is newer than the cache. Usage: completion_cached <tool> <generator command...>
+COMPLETION_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/bash_completion"
+completion_cached() {
+  local tool="$1" bin cache
+  shift
+  # type -P (not command -v) so an alias of the same name is ignored.
+  bin="$(type -P "${tool}")" || return 0
+  cache="${COMPLETION_CACHE_DIR}/${tool}.bash"
+  if [[ ! -s "${cache}" || "${bin}" -nt "${cache}" ]]; then
+    mkdir -p "${COMPLETION_CACHE_DIR}"
+    if ! "$@" > "${cache}.$$" 2> /dev/null; then
+      rm -f "${cache}.$$"
+      return 0
+    fi
+    mv -f "${cache}.$$" "${cache}"
   fi
-done
-if declare -F _kube_contexts > /dev/null; then
-  complete -F _kube_contexts kcontext
-fi
-if declare -F _kube_namespaces > /dev/null; then
-  complete -F _kube_namespaces knamespace
-fi
-
-# completion helm
-if command_exists helm; then
-  source <(helm completion bash)
-fi
-
-# completion lima
-if command_exists limactl; then
-  source <(limactl completion bash)
-fi
-
-# completion go
-function _go() {
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  case "${COMP_WORDS[COMP_CWORD - 1]}" in
-    "go")
-      comms="build clean doc env fix fmt get install list run test tool version vet"
-      # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -W "${comms}" -- "${cur}"))
-      ;;
-    *)
-      files="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type f -iname "*.go" -exec basename {} \;)"
-      dirs="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
-      repl="${files} ${dirs}"
-      # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -W "${repl}" -- "${cur}"))
-      ;;
-  esac
-  return 0
+  source_if_readable "${cache}"
 }
-complete -F _go go
 
-if command_exists terraform; then
-  complete -C "$(command -v terraform)" terraform
-fi
+load_completions() {
+  # Drop this hook first so a failure below cannot loop.
+  complete -r -D 2> /dev/null
 
-# The next line updates PATH for the Google Cloud SDK.
-if [[ -f "$HOME/gcloud/google-cloud-sdk/path.bash.inc" ]]; then
-  source_if_readable "$HOME/gcloud/google-cloud-sdk/path.bash.inc" &> /dev/null
-fi
-# The next line enables shell command completion for gcloud.
-if [[ -f "$HOME/gcloud/google-cloud-sdk/completion.bash.inc" ]]; then
+  complete -cf sudo
+  complete -cf man
+  if type -P kubectl > /dev/null; then
+    completion_cached kubectl kubectl completion bash
+    complete -o nospace -F __start_kubectl k
+  fi
+  if command_exists aws_completer; then
+    complete -C aws_completer aws
+  fi
+
+  # completion ekctl
+  if command_exists eksctl; then
+    completion_cached eksctl eksctl completion bash
+  fi
+
+  # completion brew
+  local brew_prefix completion
+  for brew_prefix in /opt/homebrew /usr/local; do
+    [[ -d "${brew_prefix}" ]] || continue
+    if [[ -r "${brew_prefix}/etc/profile.d/bash_completion.sh" ]]; then
+      source_if_readable "${brew_prefix}/etc/profile.d/bash_completion.sh"
+    else
+      for completion in "${brew_prefix}/etc/bash_completion.d/"*; do
+        source_if_readable "${completion}"
+      done
+    fi
+  done
+  if declare -F _kube_contexts > /dev/null; then
+    complete -F _kube_contexts kcontext
+  fi
+  if declare -F _kube_namespaces > /dev/null; then
+    complete -F _kube_namespaces knamespace
+  fi
+
+  # completion helm
+  if command_exists helm; then
+    completion_cached helm helm completion bash
+  fi
+
+  # completion lima
+  if command_exists limactl; then
+    completion_cached limactl limactl completion bash
+  fi
+
+  # completion go
+  function _go() {
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    case "${COMP_WORDS[COMP_CWORD - 1]}" in
+      "go")
+        comms="build clean doc env fix fmt get install list run test tool version vet"
+        # shellcheck disable=SC2207
+        COMPREPLY=($(compgen -W "${comms}" -- "${cur}"))
+        ;;
+      *)
+        files="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type f -iname "*.go" -exec basename {} \;)"
+        dirs="$(find "${PWD}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
+        repl="${files} ${dirs}"
+        # shellcheck disable=SC2207
+        COMPREPLY=($(compgen -W "${repl}" -- "${cur}"))
+        ;;
+    esac
+    return 0
+  }
+  complete -F _go go
+
+  if command_exists terraform; then
+    complete -C "$(command -v terraform)" terraform
+  fi
+
+  # completion gcloud
   source_if_readable "$HOME/gcloud/google-cloud-sdk/completion.bash.inc" &> /dev/null
-fi
+
+  # completion nvm (does not need nvm.sh itself)
+  source_if_readable "${NVM_DIR}/bash_completion"
+
+  # Ask bash to retry the completion now that the real definitions are loaded.
+  return 124
+}
+complete -D -F load_completions
 
 # Private bashrc
 source_if_readable ~/.bashrc_private
 
 source_if_readable "$HOME/.bash_completions/netcheck.sh"
 
+## nvm
+# Sourcing nvm.sh costs ~220ms. The default alias is `system`, so nvm puts
+# nothing on PATH anyway -- node/npm come from Homebrew either way. Load it on
+# first use instead; the shim replaces itself with the real function.
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  nvm() {
+    unset -f nvm
+    \. "$NVM_DIR/nvm.sh"
+    source_if_readable "$NVM_DIR/bash_completion"
+    nvm "$@"
+  }
+fi
