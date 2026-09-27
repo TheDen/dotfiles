@@ -14,12 +14,22 @@ source_if_readable() {
   [[ -r "$1" ]] && source "$1"
 }
 
+path_remove() {
+  local entry out="" IFS=:
+  for entry in ${PATH}; do
+    [[ "${entry}" == "$1" ]] && continue
+    out="${out:+${out}:}${entry}"
+  done
+  PATH="${out}"
+}
+
+# Moves the directory to the front even when it is already on PATH. Skipping it
+# instead would leave an inherited order in place -- panes inherit PATH from the
+# tmux server, so /usr/local/bin could otherwise keep winning over /opt/homebrew.
 path_prepend() {
   [[ -d "$1" ]] || return
-  case ":${PATH}:" in
-    *":$1:"*) ;;
-    *) PATH="$1:${PATH}" ;;
-  esac
+  path_remove "$1"
+  PATH="$1${PATH:+:${PATH}}"
 }
 
 path_append() {
@@ -28,6 +38,19 @@ path_append() {
     *":$1:"*) ;;
     *) PATH="${PATH}:$1" ;;
   esac
+}
+
+# Prepend a keg-only formula's bin dir, preferring the Apple Silicon prefix.
+# x86 Homebrew (/usr/local, aliased to ibrew) is only a fallback for formulae
+# that are not installed under /opt/homebrew, since x86 is on its way out.
+path_prepend_brew_opt() {
+  local prefix
+  for prefix in /opt/homebrew /usr/local; do
+    if [[ -d "${prefix}/opt/$1/bin" ]]; then
+      path_prepend "${prefix}/opt/$1/bin"
+      return
+    fi
+  done
 }
 
 ## Homebrew
@@ -74,13 +97,13 @@ path_append "$HOME/Library/Python/3.9/bin"
 path_append "$HOME/.cargo/bin"
 # use "$(/usr/libexec/java_home -v 1.8)" to get JAVA_HOME
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home"
-path_prepend "/usr/local/opt/gettext/bin"
-path_prepend "/usr/local/sbin"
+path_prepend_brew_opt gettext
+# "${HOMEBREW_PREFIX}/sbin" is already on PATH from the Homebrew block above.
 path_append "$HOME/.kube/plugins/jordanwilson230"
-path_prepend "/usr/local/opt/openssl/bin"
+path_prepend_brew_opt openssl
 export GEM_HOME="$HOME/.gem"
 path_prepend "$HOME/.gem/bin"
-path_prepend "/usr/local/opt/ruby/bin"
+path_prepend_brew_opt ruby
 export PATH
 GPG_TTY="$(tty)"
 export GPG_TTY
@@ -149,7 +172,7 @@ alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 alias bluetoothresetMac='sudo kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport && sudo kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
 alias flushDNSMac="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
 alias htop="sudo htop"
-alias pip3="/usr/local/bin/pip3"
+alias pip3="/opt/homebrew/bin/pip3"
 
 ## Aliases: Architecture and package management
 alias m1="arch -arm64"
@@ -231,6 +254,9 @@ load_completions() {
   fi
 
   # completion brew
+  # Only the Apple Silicon prefix; every script under /usr/local's
+  # bash_completion.d has an identically named counterpart under /opt/homebrew,
+  # so loading both only let the x86 copies override the arm64 ones.
   local brew_prefix completion
   for brew_prefix in /opt/homebrew /usr/local; do
     [[ -d "${brew_prefix}" ]] || continue
@@ -241,6 +267,7 @@ load_completions() {
         source_if_readable "${completion}"
       done
     fi
+    break
   done
   if declare -F _kube_contexts > /dev/null; then
     complete -F _kube_contexts kcontext
