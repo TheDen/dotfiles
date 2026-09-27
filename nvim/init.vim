@@ -1,7 +1,5 @@
-set nocompatible
-filetype on
 call plug#begin()
-Plug 'ervandew/supertab'
+Plug 'vim-scripts/VimCompletesMe'
 Plug 'rdolgushin/groovy.vim'
 Plug 'sheerun/vim-polyglot'
 Plug 'matze/vim-move'
@@ -14,20 +12,27 @@ Plug 'gko/vim-coloresque'
 Plug 'vitalk/vim-shebang'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-treesitter/nvim-treesitter'
+"" nvim-treesitter removed: it was never configured (no .setup{} call), so it
+"" only ever acted as a parser installer -- vim-polyglot does the highlighting.
+"" yaml.nvim still needs a yaml parser, and it used the one that shipped inside
+"" the plugin dir, so that parser now lives at ~/.config/nvim/parser/yaml.so.
+"" It is an arch-specific binary, hence not committed to this repo; on a new
+"" machine rebuild it with tree-sitter-cli or reinstate nvim-treesitter briefly.
 Plug 'cuducos/yaml.nvim'
 Plug 'ibhagwan/fzf-lua'
+Plug 'Glench/Vim-Jinja2-Syntax'
 call plug#end()
 
 colorscheme dante
 set background=dark
-set termguicolors&
+set termguicolors " True colour (was `termguicolors&`, which reset it back off)
 
 syntax on " Syntax highlighting
 filetype plugin indent on " Filetype auto-detection
-set ttyfast " Fast terminal conn for faster redraw
 set autoindent " Turn on autoident
 set hlsearch " Highlight searches
+set ignorecase " Case-insensitive search...
+set smartcase " ...unless the pattern has a capital (matches telescope's --smart-case)
 
 "" <ctrl+n><ctrl+n> toggles line numbers
 nmap <C-N><C-N> :set invnumber<CR>
@@ -38,13 +43,15 @@ set autoread " Read when file is modified externally
 
 set laststatus=2 " Always show the status line
 
-"" Show full path of current file
-set statusline+=%F
+"" Show full path of current file. nvim's default 'statusline' is empty, so a
+"" bare `+=%F` threw away the position info 'ruler' would otherwise give.
+set statusline=%F%m%r%h%w%=%l:%c\ %P
 
 
 """ Toggle paste/nopaste
+"" ('pastetoggle' was removed in nvim 0.11 -- E519. Terminal paste is
+"" bracketed and handled automatically, so this is only a manual escape hatch.)
 nnoremap <C-y> :set invpaste paste?<CR>
-set pastetoggle=<C-y>
 set showmode
 
 """ Toggle syntax
@@ -57,14 +64,6 @@ set showmode
 "" No noise
 set noerrorbells
 set novisualbell
-
-""" Enable 256 colors
-if &term == 'xterm' || &term == 'screen-256color'
-  set t_Co=256
-endif
-if &term =~ 'xterm'
-  set t_ut=
-endif
 
 """ Autocomplete in menu
 set wildmenu
@@ -83,25 +82,27 @@ set tabstop=2
 set shiftwidth=2
 set expandtab " Use spaces instead of tabs
 set smarttab " Be smart when using tabs
-autocmd FileType python set tabstop=2|set shiftwidth=2|set expandtab
 
 set backspace=indent,eol,start
 
-au BufReadPost Jenkinsfile set syntax=groovy
-au BufReadPost Jenkinsfile set filetype=groovy
-
-autocmd BufNewFile,BufRead Dockerfile* setfiletype Dockerfile
+"" Filetype overrides. These deliberately *override* nvim's own detection
+"" (which types Jenkinsfile as `Jenkinsfile` and .html as `html`), so they use
+"" `set filetype=` rather than `setfiletype`, which is a no-op once a filetype
+"" has already been set. Setting 'filetype' pulls in syntax + indent, so there
+"" is no need to set 'syntax' as well.
+"" Dockerfile* is dropped: nvim detects it natively as lowercase `dockerfile`,
+"" and the old capitalised spelling only resolved by luck on case-insensitive
+"" macOS -- it would have broken on Linux.
+au BufNewFile,BufRead Jenkinsfile* set filetype=groovy
+au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm,*.j2 set filetype=jinja
 
 "AddShebangPattern! zsh ^#!.*/bin/bash
 "au BufReadPost *.sh set syntax=zsh
 
-" Highlight trailing whitespaces
-highlight ExtraWhitespace ctermbg=red guibg=red
-match ExtraWhitespace /\s\+$/
-autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-autocmd BufWinLeave * call clearmatches()
+"" Trailing whitespace is highlighted by vim-better-whitespace (on by default),
+"" so the hand-rolled `match ExtraWhitespace` block that used to live here is
+"" gone -- its BufWinLeave `clearmatches()` also wiped other plugins' matches.
+let g:better_whitespace_guicolor = 'red'
 
 let g:move_key_modifier = 'C' " ctrl+k moves line up, ctrl+j moves line down
 
@@ -123,8 +124,13 @@ let g:shfmt_extra_args = '-i 2 -ci -sr'
 let g:shfmt_fmt_on_save = 1
 
 " Toggle spellcheck
+" NOTE: <C-s> is XOFF under terminal flow control and will appear to freeze the
+" terminal unless you run `stty -ixon`. <leader>z is the safe alternative --
+" it sits near vim's own z= / zg spell commands, and avoids <leader>s*, which
+" is vim-better-whitespace's StripWhitespace operator.
 set spelllang=en_au
 nnoremap <C-s> :set spell!<CR>
+nnoremap <leader>z :set spell!<CR>
 
 " CTRL-X to cut
 vnoremap <C-X> "+x
