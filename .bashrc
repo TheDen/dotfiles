@@ -83,7 +83,20 @@ export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_INSECURE_REDIRECT=1
 export HOMEBREW_CASK_OPTS=--require-sha
 export KUBECTX_IGNORE_FZF=1
-export DO_NOT_TRACK=true
+
+## Telemetry opt-outs
+# The cross-vendor convention (consoledonottrack.com) specifies the literal "1";
+# some tools compare against it exactly, so don't use "true" here.
+export DO_NOT_TRACK=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export AZURE_CORE_COLLECT_TELEMETRY=0
+# gcloud maps core/disable_usage_reporting to CLOUDSDK_<SECTION>_<PROPERTY>.
+export CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
+# HashiCorp checkpoint: terraform, vagrant, packer, consul, nomad.
+export CHECKPOINT_DISABLE=1
+export SAM_CLI_TELEMETRY=0
+export NEXT_TELEMETRY_DISABLED=1
+export EXPO_NO_TELEMETRY=1
 
 ## PATH
 path_prepend "$HOME/.local/bin"
