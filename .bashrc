@@ -15,8 +15,12 @@ source_if_readable() {
 }
 
 path_remove() {
-  local entry out="" IFS=:
-  for entry in ${PATH}; do
+  # read -ra splits on IFS without globbing, and "${parts[@]}" expands without
+  # it too. An unquoted ${PATH} split would glob, so an entry holding [ ], *
+  # or ? would expand into the files it matches and corrupt PATH.
+  local entry out="" parts
+  IFS=: read -ra parts <<< "${PATH}"
+  for entry in "${parts[@]}"; do
     [[ "${entry}" == "$1" ]] && continue
     out="${out:+${out}:}${entry}"
   done
@@ -71,7 +75,13 @@ if [[ -n ${HOMEBREW_PREFIX} ]]; then
   esac
 fi
 
-export TERM=screen-256color
+# .tmux.conf sets no default-terminal, so tmux would otherwise fall back to
+# plain "screen" (8 colours) in a pane. Only correct TERM there -- outside
+# tmux the emulator already sets it (alacritty.toml exports xterm-256color),
+# and overriding it would also follow ssh into other terminals.
+if [[ -n ${TMUX} ]]; then
+  export TERM=screen-256color
+fi
 
 ## Prompt config
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
@@ -104,7 +114,6 @@ path_prepend "$HOME/bin"
 export GOPATH="$HOME/go"
 export GOBIN=$GOPATH/bin
 path_append "$GOBIN"
-path_append "$HOME/Library/Python/3.9/bin"
 #export VOLTA_HOME="$HOME/.volta"
 #export PATH="$VOLTA_HOME/bin:$PATH"
 path_append "$HOME/.cargo/bin"
@@ -206,6 +215,9 @@ fi
 shopt -s histappend
 export HISTFILESIZE=
 export HISTSIZE=
+# Keep a space-prefixed command out of history entirely -- a per-command
+# version of the `private` alias below, with nothing to remember to undo.
+export HISTCONTROL=ignorespace
 # Change the file location because certain bash sessions truncate .bash_history file upon close.
 export HISTFILE=~/.bash_eternal_history
 # Force prompt to write history after every command.
@@ -304,7 +316,7 @@ load_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     case "${COMP_WORDS[COMP_CWORD - 1]}" in
       "go")
-        comms="build clean doc env fix fmt get install list run test tool version vet"
+        comms="bug build clean doc env fix fmt generate get install list mod run telemetry test tool version vet work"
         # shellcheck disable=SC2207
         COMPREPLY=($(compgen -W "${comms}" -- "${cur}"))
         ;;
