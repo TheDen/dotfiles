@@ -132,6 +132,12 @@ export GPG_TTY
 export GREP_COLOR='1;37;41'
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
+# Without -R, less renders ANSI colour in its input as literal escape text, so
+# anything paged loses colour: git, aws v2, kubectl, bat. Note git supplies its
+# own "FRX" only while LESS is unset, so setting this also means short git
+# output no longer quits by itself -- use -FR instead if you want that back.
+export LESS=-R
+export PAGER=less
 # Manpage colours ($'...' avoids a subshell per variable)
 LESS_TERMCAP_mb=$'\e[1;31m'
 LESS_TERMCAP_md=$'\e[1;31m'
