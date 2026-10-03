@@ -75,13 +75,10 @@ if [[ -n ${HOMEBREW_PREFIX} ]]; then
   esac
 fi
 
-# .tmux.conf sets no default-terminal, so tmux would otherwise fall back to
-# plain "screen" (8 colours) in a pane. Only correct TERM there -- outside
-# tmux the emulator already sets it (alacritty.toml exports xterm-256color),
-# and overriding it would also follow ssh into other terminals.
-if [[ -n ${TMUX} ]]; then
-  export TERM=screen-256color
-fi
+# TERM is not corrected here: .tmux.conf sets default-terminal to
+# tmux-256color, so a pane already has the right entry, and forcing
+# screen-256color over it would drop italics and styled underlines. Outside
+# tmux the emulator sets TERM (alacritty.toml exports xterm-256color).
 
 ## Prompt config
 PS1='\[\033[0;$([[ $? = 0 ]] && printf 32 || printf 31)m\]$ \[\033[0m\]'
