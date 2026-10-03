@@ -21,11 +21,12 @@ cache_dir=${TMPDIR:-/tmp}
 # Minimum client width at which each segment earns its space. Path, the branch
 # and battery have no threshold: they always show. W_DIFF gates only the line
 # counts inside the git group, the least critical part of it.
-W_AWS=90 W_KUBE=125 W_MEM=100 W_DISK=105 W_IP=155 W_DIFF=130
+W_AWS=90 W_KUBE=115 W_MEM=100 W_DISK=105 W_DIFF=120
 
 # --- palette ----------------------------------------------------------------
 # Mirrors the block at the top of ~/.tmux.conf; keep the two in step.
-C_DIM='#4e4e4e' # separators
+C_DIM='#4e4e4e'  # separators
+C_PATH='#eaeaea' # matches alacritty's foreground
 C_GIT='#f7768e'     # branch
 C_DEFBRANCH='#e0af68' # on main/master: worth noticing before a commit lands
 C_UNTRACK='#8a8a8a' # untracked files: present, but not yet yours to lose
@@ -36,7 +37,6 @@ C_AWS='#9ece6a'
 C_KUBE='#ff9e64'
 C_MEM='#bb9af7'
 C_DISK='#73daca'
-C_IP='#8a8a8a'
 C_CRIT='#f7768e' # behind upstream, critical battery
 
 # --- cache ------------------------------------------------------------------
@@ -119,6 +119,35 @@ git_head() {
   done
 }
 
+# A bare basename is ambiguous exactly where it matters: "bin", "src" and
+# "tests" look the same in every checkout you own. The repo name is the useful
+# anchor, so at the repo root the parent directory supplies the context
+# (repo/dotfiles) and below it the repo name leads the relative path
+# (dotfiles/bin). Relies on GIT_ROOT, so git_head must have run first.
+path_label() {
+  local parent sub
+  if [[ -n $GIT_ROOT ]]; then
+    if [[ $path == "$GIT_ROOT" ]]; then
+      parent=${GIT_ROOT%/*}
+      printf '%s/%s' "${parent##*/}" "${GIT_ROOT##*/}"
+    else
+      sub=${path#"$GIT_ROOT"/}
+      # A deep tree would crowd the bar; keep the repo and the last two levels.
+      [[ $sub == */*/* ]] && sub=…/${sub#"${sub%/*/*}"/}
+      printf '%s/%s' "${GIT_ROOT##*/}" "$sub"
+    fi
+    return
+  fi
+  # Outside a repo there is no anchor, so the parent is the only context going.
+  [[ $path == "$HOME" ]] && { printf '~'; return; }
+  parent=${path%/*}
+  if [[ -n $parent ]]; then
+    printf '%s/%s' "${parent##*/}" "${path##*/}"
+  else
+    printf '%s' "$path"
+  fi
+}
+
 # Emits "<staged> <unstaged> <untracked> <ahead> <behind> <insertions> <deletions>".
 _git_state() {
   local staged unstaged untracked ahead behind ins del
@@ -174,18 +203,22 @@ git_state() {
 _aws() { aws-profile whoami 2>/dev/null | awk '{if (/>/) print $2}'; }
 aws_profile() { cached 30 aws _aws; }
 
+# An EKS context's cluster is the full 60-odd character ARN
+# (arn:aws:eks:<region>:<account>:cluster/<name>), which on its own is longer
+# than every other segment combined. Keeping only the part after the last '/'
+# does that with an expansion rather than a second process, and leaves a
+# context with no '/' in it -- docker-desktop, admin@host -- untouched.
 _kube() {
-  kubectl config view --minify \
-    --output 'jsonpath={..contexts[0].context.cluster}' 2>/dev/null |
-    sed -E 's/.*\([0-9]{10}\)://'
+  local c
+  c=$(kubectl config view --minify \
+    --output 'jsonpath={..contexts[0].context.cluster}' 2>/dev/null)
+  printf '%s' "${c##*/}"
 }
 kube_cluster() { cached 30 kube _kube; }
 
 # -H is base 10, matching the free space macOS itself reports (-h is base 2).
 _disk() { df -H / 2>/dev/null | awk 'NR==2 {print $4}'; }
 disk_free() { cached 10 disk _disk; }
-
-lan_ip() { cached 30 ip ipconfig getifaddr en0; }
 
 # macOS deliberately fills free RAM with file cache, so a used/total figure
 # stays high whatever the machine is actually doing and says little about
@@ -256,6 +289,8 @@ seg() { # <colour> <value>
 counted() { [[ $1 == +([0-9]) && $1 != 0 ]]; }
 
 git_head
+printf '#[fg=%s,bold]%s#[nobold] ' "$C_PATH" "$(path_label)"
+
 if [[ -n $GIT_BRANCH ]]; then
   printf '#[fg=%s]▏' "$C_DIM"
   if [[ -n $GIT_DETACHED ]]; then
@@ -307,7 +342,6 @@ if [[ $mem_pct == +([0-9]) ]] && ((width >= W_MEM)); then
 fi
 
 ((width >= W_DISK)) && seg "$C_DISK" "$(disk_free)"
-((width >= W_IP)) && seg "$C_IP" "$(lan_ip)"
 
 battery
 if [[ -n $BATT_PCT ]]; then
