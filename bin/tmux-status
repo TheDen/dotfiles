@@ -5,7 +5,7 @@
 # startups dominate. Doing everything here costs one startup, not one each.
 # Slow-but-rarely-changing values are cached; a cache hit uses only builtins,
 # so a typical tick forks nothing at all. Anything that cannot answer in a few
-# milliseconds (memory sampling, git) is refreshed out of band: the tick
+# milliseconds (the git calls) is refreshed out of band: the tick
 # serves the last known value and never waits.
 #
 # Usage: tmux-status <pane_current_path> [client_width]
@@ -18,15 +18,19 @@ path=${1:-$PWD}
 width=${2:-200}
 cache_dir=${TMPDIR:-/tmp}
 
-# Minimum client width at which each segment earns its space. Path, git and
-# battery have no threshold: they always show.
-W_AWS=90 W_KUBE=125 W_MEM=115 W_DISK=105 W_IP=155
+# Minimum client width at which each segment earns its space. Path, the branch
+# and battery have no threshold: they always show. W_DIFF gates only the line
+# counts inside the git group, the least critical part of it.
+W_AWS=90 W_KUBE=125 W_MEM=100 W_DISK=105 W_IP=155 W_DIFF=130
 
 # --- palette ----------------------------------------------------------------
 # Mirrors the block at the top of ~/.tmux.conf; keep the two in step.
 C_DIM='#4e4e4e' # separators
-C_GIT='#f7768e'  # branch
-C_WARN='#e0af68' # uncommitted changes
+C_GIT='#f7768e'     # branch
+C_DEFBRANCH='#e0af68' # on main/master: worth noticing before a commit lands
+C_UNTRACK='#8a8a8a' # untracked files: present, but not yet yours to lose
+C_LABEL='#8a8a8a'   # the one segment that cannot describe itself
+C_WARN='#e0af68'    # unstaged changes
 C_OK='#9ece6a'   # ahead of upstream, aws
 C_AWS='#9ece6a'
 C_KUBE='#ff9e64'
@@ -83,7 +87,7 @@ refresh_async() { # <key> <command...>
 # and costs no fork. The dirty count and upstream divergence need real git
 # calls, which are cheap here but can take hundreds of milliseconds in a large
 # worktree, so they come from an out-of-band refresh instead.
-GIT_ROOT= GIT_BRANCH=
+GIT_ROOT= GIT_BRANCH= GIT_DETACHED=
 git_head() {
   local d=$path head
   while [[ -n $d && $d != / ]]; do
@@ -94,35 +98,72 @@ git_head() {
       if [[ $head == ref:*refs/heads/* ]]; then
         GIT_BRANCH=${head##*refs/heads/}
       else
+        # HEAD holds a raw sha: detached.
         GIT_BRANCH=${head:0:7}
+        GIT_DETACHED=1
       fi
       return
     elif [[ -f $d/.git ]]; then
       # Worktree or submodule: .git is a file pointing elsewhere.
       GIT_ROOT=$d
       GIT_BRANCH=$(git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null)
+      if [[ $GIT_BRANCH == HEAD ]]; then
+        # --abbrev-ref answers the literal "HEAD" when detached, which is not
+        # a name worth showing; take the sha, matching the branch above.
+        GIT_BRANCH=$(git -C "$d" rev-parse --short=7 HEAD 2>/dev/null)
+        GIT_DETACHED=1
+      fi
       return
     fi
     d=${d%/*}
   done
 }
 
-# Emits "<dirty> <ahead> <behind>".
+# Emits "<staged> <unstaged> <untracked> <ahead> <behind> <insertions> <deletions>".
 _git_state() {
-  local dirty ahead behind
-  dirty=$(git -C "$GIT_ROOT" status --porcelain 2>/dev/null | grep -c '^')
+  local staged unstaged untracked ahead behind ins del
+  # In porcelain v1 each line is "XY path": X is the index column, Y the
+  # worktree one, and "??" is untracked. A file can be in both X and Y at once
+  # (staged edit plus a later unstaged one), so the counts deliberately
+  # overlap rather than partitioning the file list. One awk pass, not three.
+  read -r staged unstaged untracked < <(
+    git -C "$GIT_ROOT" status --porcelain 2>/dev/null | awk '
+      /^\?\?/ { u++; next }
+      {
+        if (substr($0, 1, 1) != " ") s++
+        if (substr($0, 2, 1) != " ") w++
+      }
+      END { printf "%d %d %d", s + 0, w + 0, u + 0 }'
+  )
   # Left side of the triple-dot is the upstream, so left=behind, right=ahead.
   read -r behind ahead < <(
     git -C "$GIT_ROOT" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null
   )
-  printf '%s %s %s' "${dirty:-0}" "${ahead:-0}" "${behind:-0}"
+  # File counts say how many things changed, not how much. "HEAD" rather than
+  # a bare diff so staged work counts too; untracked files are outside any
+  # diff, which is what the separate "?" count is for. No commits yet means an
+  # invalid HEAD, hence empty output and the 0 defaults below.
+  read -r ins del < <(
+    git -C "$GIT_ROOT" diff HEAD --shortstat 2>/dev/null | awk '
+      {
+        for (i = 1; i <= NF; i++) {
+          if ($i ~ /^insertion/) ins = $(i - 1)
+          if ($i ~ /^deletion/)  del = $(i - 1)
+        }
+      }
+      END { printf "%d %d", ins + 0, del + 0 }'
+  )
+  printf '%s %s %s %s %s %s %s' "${staged:-0}" "${unstaged:-0}" "${untracked:-0}" \
+    "${ahead:-0}" "${behind:-0}" "${ins:-0}" "${del:-0}"
 }
 
 # Unlike the machine-wide segments below, this is per repository: a single
 # global key would show whichever repo another pane last looked at.
 git_state() {
   [[ -n $GIT_ROOT ]] || return
-  local key=git${GIT_ROOT//\//%}
+  # The suffix is a format version: the cached line has gained fields twice
+  # now, and an entry left by an older layout would parse as garbage.
+  local key=gs2${GIT_ROOT//\//%}
   cache_get 5 "$key" || refresh_async "$key" _git_state
   printf '%s' "$CACHED"
 }
@@ -146,14 +187,21 @@ disk_free() { cached 10 disk _disk; }
 
 lan_ip() { cached 30 ip ipconfig getifaddr en0; }
 
-# tmux-mem-cpu-load samples over >=1s, so it cannot be called inline without
-# stalling every tick. Output is "<used>/<total>GB  <cpu>%"; only the first
-# field is used, but the tool has no flag to suppress the rest.
-_mem() { tmux-mem-cpu-load --interval 1 -m 0 -a 0 -g 0; }
-mem_used() {
-  cache_get 10 mem || refresh_async mem _mem
-  printf '%s' "${CACHED%% *}"
+# macOS deliberately fills free RAM with file cache, so a used/total figure
+# stays high whatever the machine is actually doing and says little about
+# whether memory is tight. memory_pressure reports the free percentage and the
+# kernel reports its own pressure level; both answer in ~4ms, so this needs
+# none of the out-of-band machinery the old 1s-sampling tool required.
+# Emits "<used percent> <pressure level>", level 1=normal 2=warn 4=critical.
+_mem() {
+  local out lvl
+  out=$(memory_pressure -Q 2>/dev/null)
+  # The only percentage in the output is the free-memory one.
+  [[ $out =~ ([0-9]+)% ]] || return
+  lvl=$(sysctl -n kern.memorystatus_vm_pressure_level 2>/dev/null)
+  printf '%s %s' "$((100 - BASH_REMATCH[1]))" "${lvl:-1}"
 }
+mem_pressure() { cached 5 mempress _mem; }
 
 # --- battery ----------------------------------------------------------------
 # One pmset call yields percentage, state and time, replacing the tmux-battery
@@ -203,13 +251,36 @@ seg() { # <colour> <value>
   [[ -n $2 ]] && printf '#[fg=%s]▏#[fg=%s]%s ' "$C_DIM" "$1" "$2"
 }
 
+# A count is only worth drawing when it is a real non-zero number; the cache
+# can legitimately be empty on the very first tick after a refresh is queued.
+counted() { [[ $1 == +([0-9]) && $1 != 0 ]]; }
+
 git_head
 if [[ -n $GIT_BRANCH ]]; then
-  printf '#[fg=%s]▏#[fg=%s]%s' "$C_DIM" "$C_GIT" "$GIT_BRANCH"
-  read -r dirty ahead behind <<<"$(git_state)"
-  [[ $dirty == +([0-9]) && $dirty != 0 ]] && printf ' #[fg=%s]*%s' "$C_WARN" "$dirty"
-  [[ $ahead == +([0-9]) && $ahead != 0 ]] && printf ' #[fg=%s]↑%s' "$C_OK" "$ahead"
-  [[ $behind == +([0-9]) && $behind != 0 ]] && printf ' #[fg=%s]↓%s' "$C_CRIT" "$behind"
+  printf '#[fg=%s]▏' "$C_DIM"
+  if [[ -n $GIT_DETACHED ]]; then
+    # A bare 7-char sha is indistinguishable from a short branch name, so say
+    # which it is. One column, no colour of its own.
+    printf '#[fg=%s]@%s' "$C_GIT" "$GIT_BRANCH"
+  elif [[ $GIT_BRANCH == main || $GIT_BRANCH == master ]]; then
+    printf '#[fg=%s,bold]%s#[nobold]' "$C_DEFBRANCH" "$GIT_BRANCH"
+  else
+    printf '#[fg=%s]%s' "$C_GIT" "$GIT_BRANCH"
+  fi
+
+  read -r staged unstaged untracked ahead behind ins del <<<"$(git_state)"
+  counted "$staged" && printf ' #[fg=%s]+%s' "$C_OK" "$staged"
+  counted "$unstaged" && printf ' #[fg=%s]~%s' "$C_WARN" "$unstaged"
+  counted "$untracked" && printf ' #[fg=%s]?%s' "$C_UNTRACK" "$untracked"
+  counted "$ahead" && printf ' #[fg=%s]↑%s' "$C_OK" "$ahead"
+  counted "$behind" && printf ' #[fg=%s]↓%s' "$C_CRIT" "$behind"
+  # Sign trails the number here, where the file counts above lead with theirs:
+  # "+2" is two staged files, "120+" is a hundred and twenty added lines, and
+  # the two must not read as the same thing.
+  if ((width >= W_DIFF)); then
+    counted "$ins" && printf ' #[fg=%s]%s+' "$C_OK" "$ins"
+    counted "$del" && printf ' #[fg=%s]%s-' "$C_CRIT" "$del"
+  fi
   printf ' '
 fi
 
@@ -218,7 +289,22 @@ fi
 ((width >= W_AWS)) && seg "$C_AWS" "$(aws_profile)"
 ((width >= W_KUBE)) && seg "$C_KUBE" "$(kube_cluster)"
 
-((width >= W_MEM)) && seg "$C_MEM" "$(mem_used)"
+# Colour escalates with the kernel's pressure level rather than with the
+# percentage, so the segment only shouts when the kernel itself is worried.
+# A bare "11%" is unreadable a week later, and it collides with the battery's
+# own percentage, so this is the one segment that cannot describe itself: it
+# gets a dim three-letter tag, four columns for permanent legibility. Every
+# other value still carries its own units (454G) or shape (192.168.4.41).
+read -r mem_pct mem_lvl <<<"$(mem_pressure)"
+if [[ $mem_pct == +([0-9]) ]] && ((width >= W_MEM)); then
+  case $mem_lvl in
+    4) mem_fg=$C_CRIT ;;
+    2) mem_fg=$C_WARN ;;
+    *) mem_fg=$C_MEM ;;
+  esac
+  printf '#[fg=%s]▏#[fg=%s]mem #[fg=%s]%s%% ' \
+    "$C_DIM" "$C_LABEL" "$mem_fg" "$mem_pct"
+fi
 
 ((width >= W_DISK)) && seg "$C_DISK" "$(disk_free)"
 ((width >= W_IP)) && seg "$C_IP" "$(lan_ip)"
