@@ -1,15 +1,39 @@
 #!/usr/bin/env bash
 # Renders the right-hand tmux status segments in a single process.
 #
-# tmux forks a shell per #() every status-interval, so at 1s ticks the shell
-# startups dominate. Doing everything here costs one startup instead of seven.
+# tmux forks a shell per #() every status-interval, so at a 2s tick the shell
+# startups dominate. Doing everything here costs one startup, not one each.
 # Slow-but-rarely-changing values are cached; a cache hit uses only builtins,
-# so a typical tick forks nothing at all.
+# so a typical tick forks nothing at all. Anything that cannot answer in a few
+# milliseconds (memory sampling, git) is refreshed out of band: the tick
+# serves the last known value and never waits.
 #
-# Usage: tmux-status <pane_current_path>
+# Usage: tmux-status <pane_current_path> [client_width]
 
 path=${1:-$PWD}
+# tmux gives status-right the space it asks for and trims the window list to
+# fit, so an unconditionally long right side costs the window names on a narrow
+# client. Segments are therefore dropped lowest-value-first as width shrinks;
+# the guards are plain arithmetic, and a dropped segment is never computed.
+width=${2:-200}
 cache_dir=${TMPDIR:-/tmp}
+
+# Minimum client width at which each segment earns its space. Path, git and
+# battery have no threshold: they always show.
+W_AWS=90 W_KUBE=125 W_MEM=115 W_DISK=105 W_IP=155
+
+# --- palette ----------------------------------------------------------------
+# Mirrors the block at the top of ~/.tmux.conf; keep the two in step.
+C_DIM='#4e4e4e' # separators
+C_GIT='#f7768e'  # branch
+C_WARN='#e0af68' # uncommitted changes
+C_OK='#9ece6a'   # ahead of upstream, aws
+C_AWS='#9ece6a'
+C_KUBE='#ff9e64'
+C_MEM='#bb9af7'
+C_DISK='#73daca'
+C_IP='#8a8a8a'
+C_CRIT='#f7768e' # behind upstream, critical battery
 
 # --- cache ------------------------------------------------------------------
 # File layout: line 1 = epoch seconds, line 2 = value. Read with builtins.
@@ -41,30 +65,69 @@ cached() { # <ttl> <key> <command...>
   printf '%s' "$out"
 }
 
-# --- segment producers ------------------------------------------------------
+# refresh_async <key>: bump the timestamp first so concurrent ticks don't each
+# spawn a refresh, then run the body detached with stdout closed so tmux does
+# not wait on it. The body prints one line; empty output leaves the old value.
+refresh_async() { # <key> <command...>
+  local key=$1
+  shift
+  cache_put "$key" "$CACHED"
+  (
+    v=$("$@" 2>/dev/null)
+    [[ -n $v ]] && cache_put "$key" "$v"
+  ) >/dev/null 2>&1 &
+}
 
-# Read .git/HEAD directly: forking git costs ~15ms, this costs nothing.
-# Falls back to git for worktrees/submodules (.git as a file) and detached HEAD.
-git_branch() {
+# --- git --------------------------------------------------------------------
+# The branch comes from .git/HEAD with builtins only, so it is always current
+# and costs no fork. The dirty count and upstream divergence need real git
+# calls, which are cheap here but can take hundreds of milliseconds in a large
+# worktree, so they come from an out-of-band refresh instead.
+GIT_ROOT= GIT_BRANCH=
+git_head() {
   local d=$path head
   while [[ -n $d && $d != / ]]; do
     if [[ -d $d/.git ]]; then
+      GIT_ROOT=$d
       [[ -r $d/.git/HEAD ]] || return
       read -r head <"$d/.git/HEAD" 2>/dev/null || return
       if [[ $head == ref:*refs/heads/* ]]; then
-        printf '%s' "${head##*refs/heads/}"
+        GIT_BRANCH=${head##*refs/heads/}
       else
-        printf '%s' "${head:0:7}"
+        GIT_BRANCH=${head:0:7}
       fi
       return
     elif [[ -f $d/.git ]]; then
-      git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null
+      # Worktree or submodule: .git is a file pointing elsewhere.
+      GIT_ROOT=$d
+      GIT_BRANCH=$(git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null)
       return
     fi
     d=${d%/*}
   done
 }
 
+# Emits "<dirty> <ahead> <behind>".
+_git_state() {
+  local dirty ahead behind
+  dirty=$(git -C "$GIT_ROOT" status --porcelain 2>/dev/null | grep -c '^')
+  # Left side of the triple-dot is the upstream, so left=behind, right=ahead.
+  read -r behind ahead < <(
+    git -C "$GIT_ROOT" rev-list --left-right --count '@{upstream}...HEAD' 2>/dev/null
+  )
+  printf '%s %s %s' "${dirty:-0}" "${ahead:-0}" "${behind:-0}"
+}
+
+# Unlike the machine-wide segments below, this is per repository: a single
+# global key would show whichever repo another pane last looked at.
+git_state() {
+  [[ -n $GIT_ROOT ]] || return
+  local key=git${GIT_ROOT//\//%}
+  cache_get 5 "$key" || refresh_async "$key" _git_state
+  printf '%s' "$CACHED"
+}
+
+# --- other segment producers ------------------------------------------------
 # Each of these reduces to a single value *before* caching: the cache holds one
 # line, so caching raw multi-line output (df, notably) would truncate it.
 _aws() { aws-profile whoami 2>/dev/null | awk '{if (/>/) print $2}'; }
@@ -84,24 +147,18 @@ disk_free() { cached 10 disk _disk; }
 lan_ip() { cached 30 ip ipconfig getifaddr en0; }
 
 # tmux-mem-cpu-load samples over >=1s, so it cannot be called inline without
-# stalling every tick. Serve the last value and refresh out of band. The
-# timestamp is bumped first so concurrent ticks don't each spawn a refresh;
-# the child's stdout goes to /dev/null so tmux doesn't wait on it.
-mem_cpu() {
-  if ! cache_get 10 memcpu; then
-    cache_put memcpu "$CACHED"
-    (
-      v=$(tmux-mem-cpu-load --interval 1 -m 0 -a 0 -g 0 2>/dev/null)
-      [[ -n $v ]] && cache_put memcpu "$v"
-    ) >/dev/null 2>&1 &
-  fi
-  printf '%s' "$CACHED"
+# stalling every tick. Output is "<used>/<total>GB  <cpu>%"; only the first
+# field is used, but the tool has no flag to suppress the rest.
+_mem() { tmux-mem-cpu-load --interval 1 -m 0 -a 0 -g 0; }
+mem_used() {
+  cache_get 10 mem || refresh_async mem _mem
+  printf '%s' "${CACHED%% *}"
 }
 
 # --- battery ----------------------------------------------------------------
 # One pmset call yields percentage, state and time, replacing the tmux-battery
 # plugin (which re-ran pmset through several nested scripts, ~140ms a tick).
-BATT_PCT= BATT_TIME= BATT_BG=
+BATT_PCT= BATT_TIME= BATT_FG= BATT_CRIT=
 battery() {
   local line pct
   if cache_get 10 batt; then
@@ -124,29 +181,56 @@ battery() {
   # Substring match, not field splitting: pmset's spacing varies.
   # "discharging" must be tested first, since it contains "charging".
   if [[ $line == *discharging* ]]; then
-    # Same 8-tier gradient the tmux-battery plugin used.
+    # Same 8-tier gradient the tmux-battery plugin used, on the text rather
+    # than a colour block, so it still reads as a gauge without shouting.
     local tiers=('#ff0000' '#ff4000' '#ff8000' '#ffc000' '#ffff00' '#aaff00' '#55ff00' '#00ff00')
     local i=$((pct * 8 / 100))
     ((i > 7)) && i=7
-    BATT_BG=${tiers[i]}
+    BATT_FG=${tiers[i]}
+    # Below 10% the gradient is already red against a dark bar, which is easy
+    # to miss; invert it so it cannot be.
+    ((pct < 10)) && BATT_CRIT=1
   else
-    BATT_BG=colour33
+    BATT_FG='#7aa2f7'
+    BATT_PCT="+$BATT_PCT"
   fi
 }
 
 # --- render -----------------------------------------------------------------
-# Emit "#[style] value " only when the value is non-empty, so an inactive
-# segment leaves no coloured gap.
-seg() { [[ -n $2 ]] && printf '#[%s] %s ' "$1" "$2"; }
+# Emit a separator and "#[style] value" only when the value is non-empty, so an
+# inactive segment leaves no stray divider.
+seg() { # <colour> <value>
+  [[ -n $2 ]] && printf '#[fg=%s]▏#[fg=%s]%s ' "$C_DIM" "$1" "$2"
+}
 
-seg 'fg=white,bg=darkred'  "$(git_branch)"
-seg 'fg=black,bg=green'    "$(aws_profile)"
-seg 'fg=black,bg=darkorange' "$(kube_cluster)"
-seg 'fg=black,bg=magenta'  "$(mem_cpu)"
-seg 'fg=black,bg=cyan'     "$(disk_free)"
-seg 'fg=black,bg=pink'     "$(lan_ip)"
+git_head
+if [[ -n $GIT_BRANCH ]]; then
+  printf '#[fg=%s]▏#[fg=%s]%s' "$C_DIM" "$C_GIT" "$GIT_BRANCH"
+  read -r dirty ahead behind <<<"$(git_state)"
+  [[ $dirty == +([0-9]) && $dirty != 0 ]] && printf ' #[fg=%s]*%s' "$C_WARN" "$dirty"
+  [[ $ahead == +([0-9]) && $ahead != 0 ]] && printf ' #[fg=%s]↑%s' "$C_OK" "$ahead"
+  [[ $behind == +([0-9]) && $behind != 0 ]] && printf ' #[fg=%s]↓%s' "$C_CRIT" "$behind"
+  printf ' '
+fi
+
+# && short-circuits before the command substitution, so a segment that is not
+# shown costs nothing at all.
+((width >= W_AWS)) && seg "$C_AWS" "$(aws_profile)"
+((width >= W_KUBE)) && seg "$C_KUBE" "$(kube_cluster)"
+
+((width >= W_MEM)) && seg "$C_MEM" "$(mem_used)"
+
+((width >= W_DISK)) && seg "$C_DISK" "$(disk_free)"
+((width >= W_IP)) && seg "$C_IP" "$(lan_ip)"
 
 battery
-[[ -n $BATT_PCT ]] && printf '#[fg=colour0,bg=%s] %s%s ' \
-  "$BATT_BG" "$BATT_PCT" "${BATT_TIME:+ $BATT_TIME}"
+if [[ -n $BATT_PCT ]]; then
+  if [[ -n $BATT_CRIT ]]; then
+    printf '#[fg=%s]▏#[fg=#1c1c1c,bg=%s,bold] %s%s #[default]' \
+      "$C_DIM" "$C_CRIT" "$BATT_PCT" "${BATT_TIME:+ $BATT_TIME}"
+  else
+    printf '#[fg=%s]▏#[fg=%s]%s%s ' \
+      "$C_DIM" "$BATT_FG" "$BATT_PCT" "${BATT_TIME:+ $BATT_TIME}"
+  fi
+fi
 printf '\n'
